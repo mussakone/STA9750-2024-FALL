@@ -1,0 +1,737 @@
+---
+title: "This Is My Mini Project #2"
+editor: visual
+---
+
+```{r}
+get_imdb_file <- function(fname){
+    BASE_URL <- "https://datasets.imdbws.com/"
+    fname_ext <- paste0(fname, ".tsv.gz")
+    if(!file.exists(fname_ext)){
+        FILE_URL <- paste0(BASE_URL, fname_ext)
+        download.file(FILE_URL, 
+                      destfile = fname_ext)
+    }
+    as.data.frame(readr::read_tsv(fname_ext, lazy=FALSE))
+}
+
+```
+
+```{r}
+# My code here
+
+NAME_BASICS      <- get_imdb_file("name.basics")
+TITLE_BASICS     <- get_imdb_file("title.basics")
+TITLE_EPISODES   <- get_imdb_file("title.episode")
+TITLE_RATINGS    <- get_imdb_file("title.ratings")
+TITLE_CREW       <- get_imdb_file("title.crew")
+TITLE_PRINCIPALS <- get_imdb_file("title.principals")
+
+
+```
+
+```{r}
+
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+install.packages("dplyr")
+install.packages("stringr")
+
+```
+
+```{r}
+library(dplyr)
+library(stringr)
+
+NAME_BASICS <- NAME_BASICS |> 
+    filter(str_count(knownForTitles, ",") > 1)
+
+```
+
+```{r}
+install.packages("ggplot2")
+library(ggplot2)
+
+```
+
+```{r}
+TITLE_RATINGS |>
+    ggplot(aes(x=numVotes)) + 
+    geom_histogram(bins=30) +
+    xlab("Number of IMDB Ratings") + 
+    ylab("Number of Titles") + 
+    ggtitle("Majority of IMDB Titles Have Less than 100 Ratings") + 
+    theme_bw() + 
+    scale_x_log10(labels=scales::comma) + 
+    scale_y_continuous(labels=scales::comma)
+
+```
+
+```{r}
+TITLE_RATINGS |>
+    pull(numVotes) |>
+    quantile()
+```
+
+```{r}
+TITLE_RATINGS <- TITLE_RATINGS |>
+    filter(numVotes >= 100)
+```
+
+```{r}
+TITLE_BASICS <- TITLE_BASICS |>
+    semi_join(TITLE_RATINGS, 
+              join_by(tconst == tconst))
+
+TITLE_CREW <- TITLE_CREW |>
+    semi_join(TITLE_RATINGS, 
+              join_by(tconst == tconst))
+
+TITLE_EPISODES_1 <- TITLE_EPISODES |>
+    semi_join(TITLE_RATINGS, 
+              join_by(tconst == tconst))
+TITLE_EPISODES_2 <- TITLE_EPISODES |>
+    semi_join(TITLE_RATINGS, 
+              join_by(parentTconst == tconst))
+
+TITLE_EPISODES <- bind_rows(TITLE_EPISODES_1,
+                            TITLE_EPISODES_2) |>
+    distinct()
+
+TITLE_PRINCIPALS <- TITLE_PRINCIPALS |>
+    semi_join(TITLE_RATINGS, join_by(tconst == tconst))
+
+
+rm(TITLE_EPISODES_1)
+rm(TITLE_EPISODES_2)
+```
+
+```{r}
+NAME_BASICS <- NAME_BASICS |>
+    mutate(birthYear = as.numeric(birthYear),
+           deathYear = as.numeric(deathYear))
+```
+
+```{r}
+#Task 1
+str(TITLE_BASICS)
+str(TITLE_CREW)
+str(TITLE_EPISODES)
+str(TITLE_RATINGS)
+str(TITLE_PRINCIPALS)
+
+library(dplyr)
+
+# Correct TITLE_BASICS
+TITLE_BASICS <- TITLE_BASICS |>
+    mutate(
+        startYear = as.numeric(startYear),
+        endYear = as.numeric(endYear),
+        isAdult = as.logical(as.numeric(isAdult))
+    )
+
+# Correct TITLE_RATINGS
+TITLE_RATINGS <- TITLE_RATINGS |>
+    mutate(
+        averageRating = as.numeric(averageRating),
+        numVotes = as.numeric(numVotes)
+    )
+
+# Correct TITLE_CREW
+TITLE_CREW <- TITLE_CREW |>
+    mutate(
+        # Add conversions if needed
+    )
+
+# Correct TITLE_EPISODES
+TITLE_EPISODES <- TITLE_EPISODES |>
+    mutate(
+        seasonNumber = as.numeric(seasonNumber),
+        episodeNumber = as.numeric(episodeNumber)
+    )
+
+# Correct TITLE_PRINCIPALS
+TITLE_PRINCIPALS <- TITLE_PRINCIPALS |>
+    mutate(
+        ordering = as.numeric(ordering)
+    )
+
+```
+
+```{r}
+glimpse(NAME_BASICS)
+```
+
+```{r}
+#Task 2
+#1.How many movies are in our dataset? How many TV series? How many TV episodes?
+  
+  # Disable scientific notation
+options(scipen = 999)
+
+# Count movies, TV series, and TV episodes
+title_counts <- TITLE_BASICS |>
+    group_by(titleType) |>
+    summarize(count = n()) |>
+    filter(titleType %in% c("movie", "tvSeries", "tvEpisode"))
+
+title_counts
+
+```
+
+```{r}
+#Task 2
+#2. Who is the oldest living person in our dataset?
+
+# Find the oldest living person
+oldest_living <- NAME_BASICS |>
+    filter(is.na(deathYear)) |>
+    arrange(birthYear) |>
+    slice(1)
+
+oldest_living
+
+```
+
+```{r}
+#Task 2
+#3. There is one TV Episode in this dataset with a perfect 10/10 rating and at least 200,000 IMDb ratings. What is it? What series does it belong to?
+
+# Step 1: Get ratings for episodes with at least 200,000 votes
+popular_episodes <- TITLE_RATINGS |>
+    filter(numVotes >= 200000, averageRating == 10) |>
+    inner_join(TITLE_BASICS, by = "tconst") |>
+    filter(titleType == "tvEpisode")
+
+# Step 2: Check for results
+if (nrow(popular_episodes) == 0) {
+    # If no perfect 10/10 episode, find the highest rated episode instead
+    highest_rated_episode <- TITLE_RATINGS |>
+        filter(numVotes >= 200000) |>
+        inner_join(TITLE_BASICS, by = "tconst") |>
+        arrange(desc(averageRating)) |>
+        slice(1)
+
+    # Display the highest rated episode if no perfect 10/10 found
+    highest_rated_episode
+} else {
+    # Display the perfect 10/10 episode(s)
+    popular_episodes
+}
+
+
+```
+
+```{r}
+#Task 2
+#4.What four projects is the actor Mark Hamill most known for?
+
+# Find the titles Mark Hamill is most known for
+mark_hamill <- NAME_BASICS |>
+    filter(primaryName == "Mark Hamill") |>
+    select(nconst)
+
+known_projects <- TITLE_PRINCIPALS |>
+    filter(nconst %in% mark_hamill$nconst) |>
+    group_by(tconst) |>
+    summarize(count = n()) |>
+    top_n(4, count) |>
+    inner_join(TITLE_BASICS, by = "tconst")
+
+known_projects
+
+```
+
+```{r}
+#Task 2
+#5 What TV series, with more than 12 episodes, has the highest average rating?
+
+# Step 1: Count episodes per TV series
+episode_counts <- TITLE_EPISODES |>
+    group_by(parentTconst) |>
+    summarise(total_episodes = n(), .groups = 'drop')
+
+# Step 2: Join with TITLE_RATINGS to get ratings
+tv_series_ratings <- TITLE_BASICS |>
+    filter(titleType == "tvSeries") |>
+    inner_join(TITLE_RATINGS, by = "tconst") |>
+    inner_join(episode_counts, by = c("tconst" = "parentTconst"))
+
+# Step 3: Filter for series with more than 12 episodes
+high_rating_series <- tv_series_ratings |>
+    filter(total_episodes > 12) |>
+    arrange(desc(averageRating)) |>
+    slice(1)
+
+# Step 4: Display the result
+high_rating_series |>
+    select(primaryTitle, total_episodes, averageRating)
+
+```
+
+```{r}
+#Task 2
+
+#6. Is it true that episodes from later seasons of Happy Days have lower average ratings than early seasons?
+
+
+# Step 1: Get the tconst for Happy Days
+happy_days_tconst <- TITLE_BASICS |>
+    filter(primaryTitle == "Happy Days") |>
+    select(tconst)
+
+# Step 2: Get episodes of Happy Days and their ratings
+happy_days_episodes <- TITLE_EPISODES |>
+    filter(parentTconst %in% happy_days_tconst$tconst) |>
+    inner_join(TITLE_RATINGS, by = "tconst")
+
+# Step 3: Calculate average ratings by season
+happy_days_season_ratings <- happy_days_episodes |>
+    group_by(seasonNumber) |>
+    summarize(average_rating = mean(averageRating, na.rm = TRUE), .groups = 'drop')
+
+# Step 4: Check the ratings for each season
+happy_days_season_ratings
+
+# Step 5: Determine if later seasons have lower ratings than earlier ones
+lower_average <- all(happy_days_season_ratings$average_rating[1:(nrow(happy_days_season_ratings) - 1)] > 
+                    happy_days_season_ratings$average_rating[2:nrow(happy_days_season_ratings)])
+
+# Step 6: Print the result
+if (lower_average) {
+    print("Yes, later seasons of Happy Days have lower average ratings than earlier seasons.")
+} else {
+    print("No, later seasons of Happy Days do not have lower average ratings than earlier seasons.")
+}
+
+```
+
+```{r}
+#Task 3
+
+print("success_metric=averageRating×log(numVotes) ")
+
+library(dplyr)
+
+# Add a new 'success_metric' column to the TITLE_RATINGS table
+TITLE_RATINGS <- TITLE_RATINGS |>
+    mutate(success_metric = averageRating * log10(numVotes))
+
+# View the updated table
+head(TITLE_RATINGS)
+
+
+```
+
+```{r}
+#1 Get the top 5-10 movies by success_metric
+top_movies <- TITLE_RATINGS |>
+    inner_join(TITLE_BASICS, by = "tconst") |>
+    filter(titleType == "movie") |>
+    arrange(desc(success_metric)) |>
+    select(primaryTitle, averageRating, numVotes, success_metric) |>
+    head(10)
+
+top_movies
+
+```
+
+```{r}
+#2 Get 3-5 movies with high numVotes but low success_metric
+poor_movies <- TITLE_RATINGS |>
+    inner_join(TITLE_BASICS, by = "tconst") |>
+    filter(titleType == "movie", numVotes > 100000) |>
+    arrange(success_metric) |>
+    select(primaryTitle, averageRating, numVotes, success_metric) |>
+    head(5)
+
+poor_movies
+
+
+```
+
+```{r}
+#3 # Example: Check top movies for a prestige actor like Leonardo DiCaprio
+prestige_actor_movies <- TITLE_PRINCIPALS |>
+    filter(nconst == "nm0000138") |>
+    inner_join(TITLE_RATINGS, by = "tconst") |>
+    inner_join(TITLE_BASICS, by = "tconst") |>
+    filter(titleType == "movie") |>
+    arrange(desc(success_metric)) |>
+    select(primaryTitle, averageRating, numVotes, success_metric)
+
+prestige_actor_movies
+
+```
+
+```{r}
+#4 Another Spot check : Comedy Shows/Movies !
+
+# Check top Comedy movies by success metric
+top_comedy_movies <- TITLE_BASICS |>
+    filter(grepl("Comedy", genres)) |>
+    inner_join(TITLE_RATINGS, by = "tconst") |>
+    arrange(desc(success_metric)) |>
+    select(primaryTitle, averageRating, numVotes, success_metric) |>
+    head(5)
+
+top_comedy_movies
+
+
+```
+
+```{r}
+#5 # Analyze the distribution of success_metric to find a good threshold
+quantile(TITLE_RATINGS$success_metric, probs = seq(0, 1, 0.1))
+
+# Set a success threshold (e.g., movies in the top 20% of success_metric)
+success_threshold <- quantile(TITLE_RATINGS$success_metric, 0.8)
+
+```
+
+```{r}
+#Task 4: Trends In Success Over Time
+
+library(dplyr)
+library(ggplot2)
+
+# Add 'decade' column based on the startYear
+TITLE_BASICS <- TITLE_BASICS |>
+    mutate(decade = floor(startYear / 10) * 10)
+
+# Join with TITLE_RATINGS to include the success metric
+title_ratings_decade <- TITLE_BASICS |>
+    inner_join(TITLE_RATINGS, by = "tconst") |>
+    filter(titleType %in% c("movie", "tvSeries")) |>
+    select(primaryTitle, titleType, startYear, genres, decade, averageRating, numVotes, success_metric)
+
+# Filter for successful projects based on your threshold (set the threshold based on your analysis)
+success_threshold <- quantile(title_ratings_decade$success_metric, 0.8) # e.g., top 20%
+successful_titles <- title_ratings_decade |>
+    filter(success_metric >= success_threshold)
+
+
+```
+
+```{r}
+
+#Task 4
+#1 What was the genre with the most “successes” in each decade?
+
+# Split genres into separate rows since some movies have multiple genres
+library(tidyr)
+
+successful_by_genre_decade <- successful_titles |>
+    separate_rows(genres, sep = ",") |>
+    group_by(decade, genres) |>
+    summarize(num_successes = n(), .groups = 'drop')
+
+#1 Find the genre with the most successes in each decade
+top_genre_by_decade <- successful_by_genre_decade |>
+    group_by(decade) |>
+    slice_max(num_successes, n = 1)
+
+top_genre_by_decade
+
+
+```
+
+```{r}
+#Task 4
+# Plot: Genre with the most successes by decade
+ggplot(top_genre_by_decade, aes(x = factor(decade), y = num_successes, fill = genres)) +
+    geom_col() +
+    labs(title = "Top Genre with Most Successes by Decade",
+         x = "Decade", y = "Number of Successes",
+         fill = "Genre") +
+    theme_minimal()
+
+```
+
+```{r}
+#2 What genre consistently has the most “successes”? What genre used to reliably produced “successes” and has fallen out of favor?
+
+# Step 1: Summarize successes by genre across all decades
+total_success_by_genre_decade <- successful_titles |>
+    separate_rows(genres, sep = ",") |>
+    group_by(decade, genres) |>
+    summarize(num_successes = n(), .groups = 'drop')
+
+# Step 2: Find the genre with the most successes in each decade
+top_genre_by_decade <- total_success_by_genre_decade |>
+    group_by(decade) |>
+    slice_max(num_successes, n = 1, with_ties = FALSE) |>
+    ungroup()
+
+# Step 3: Summarize the frequency of how often each genre is the top genre across decades
+consistent_top_genres <- top_genre_by_decade |>
+    group_by(genres) |>
+    summarize(times_top_genre = n(), .groups = 'drop') |>
+    arrange(desc(times_top_genre))
+
+# View the result
+consistent_top_genres
+
+# Step 4: Compare successes in earlier decades to recent decades (since 2010)
+
+# Create a flag to distinguish early and recent decades
+successful_by_genre_early_recent <- total_success_by_genre_decade |>
+    mutate(period = ifelse(decade < 2010, "Early Decades", "Recent Decades"))
+
+# Summarize successes by genre in early and recent periods
+success_by_genre_period <- successful_by_genre_early_recent |>
+    group_by(genres, period) |>
+    summarize(total_successes = sum(num_successes), .groups = 'drop')
+
+# Spread to make it easier to compare early vs. recent
+library(tidyr)
+success_by_genre_period <- success_by_genre_period |>
+    pivot_wider(names_from = period, values_from = total_successes, values_fill = 0)
+
+# Calculate the difference in success between early and recent periods
+success_by_genre_period <- success_by_genre_period |>
+    mutate(change_in_success = `Recent Decades` - `Early Decades`) |>
+    arrange(change_in_success)
+
+# Genres that have fallen out of favor (negative change in success)
+fallen_genres <- success_by_genre_period |>
+    filter(change_in_success < 0)
+
+# View genres that have fallen out of favor
+fallen_genres
+
+```
+
+```{r}
+#Task4
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+
+# Check the structure of the data frame to find the correct year column
+str(success_by_genre_period)
+
+# Let's assume the year column is named `release_year`
+# Define the genres you want to filter for
+selected_genres <- c("Action", "Drama", "Comedy", "Horror", "Sci-Fi")
+
+# Filter for the selected genres
+genre_success_popularity_selected <- success_by_genre_period |>
+    filter(genres %in% selected_genres)
+
+# Plot: Success trends for selected genres over time
+ggplot(genre_success_popularity_selected, aes(x = factor(decade), y = num_successes, color = genres, group = genres)) +
+    geom_line(size = 1.5) +
+    geom_point(size = 3) +
+    labs(title = "Success Trends for Selected Genres Over Time",
+         x = "Decade", y = "Number of Successes",
+         color = "Genre") +
+    theme_minimal()
+
+```
+
+```{r}
+#Task 4 
+#3 What genre has produced the most “successes” since 2010? Does it have the highest success rate or does it only have a large number of successes because there are many productions in that genre?
+
+# Step 1: Filter for titles since 2010
+titles_since_2010 <- successful_titles |>
+    filter(decade >= 2010)
+
+# Step 2: Separate rows by genre for proper counting
+titles_genre_split <- titles_since_2010 |>
+    separate_rows(genres, sep = ",")
+
+# Step 3: Count total titles produced in each genre since 2010
+total_titles_by_genre <- TITLE_BASICS |>
+    filter(startYear >= 2010) |>
+    separate_rows(genres, sep = ",") |>
+    group_by(genres) |>
+    summarize(total_titles = n(), .groups = 'drop')
+
+# Step 4: Count successful titles (based on your custom success metric) per genre since 2010
+successful_titles_by_genre <- titles_genre_split |>
+    group_by(genres) |>
+    summarize(successful_titles = n(), .groups = 'drop')
+
+# Step 5: Merge the total titles and successful titles data
+genre_success_data <- total_titles_by_genre |>
+    left_join(successful_titles_by_genre, by = "genres") |>
+    replace_na(list(successful_titles = 0)) # If no successes, set to 0
+
+# Step 6: Calculate the success rate for each genre
+genre_success_data <- genre_success_data |>
+    mutate(success_rate = successful_titles / total_titles) |>
+    arrange(desc(successful_titles))
+
+# View the top genres by number of successes
+head(genre_success_data, 10)
+```
+```{r}
+#Task4
+#4 What genre has become more popular in recent years?
+# Step 1: Separate genres into individual rows and calculate success by genre and decade
+library(tidyr)
+library(dplyr)
+
+# Separate genres and group by decade and genre
+success_by_genre_decade <- successful_titles |>
+    separate_rows(genres, sep = ",") |>
+    group_by(decade, genres) |>
+    summarize(num_successes = n(), .groups = 'drop')
+
+# Step 2: Categorize periods into "Early Decades" and "Recent Decades" (2010 onwards)
+success_by_genre_period <- success_by_genre_decade |>
+    mutate(period = ifelse(decade < 2010, "Early Decades", "Recent Decades"))
+
+# Step 3: Summarize the total successes by genre in early vs recent periods
+success_by_genre_period_summary <- success_by_genre_period |>
+    group_by(genres, period) |>
+    summarize(total_successes = sum(num_successes), .groups = 'drop')
+
+# Step 4: Reshape the data to compare success between periods (early vs recent)
+success_by_genre_comparison <- success_by_genre_period_summary |>
+    pivot_wider(names_from = period, values_from = total_successes, values_fill = 0)
+
+# Step 5: Calculate the change in success between early and recent periods
+success_by_genre_comparison <- success_by_genre_comparison |>
+    mutate(change_in_success = `Recent Decades` - `Early Decades`) |>
+    arrange(desc(change_in_success))
+
+# Step 6: Identify genres that have become more popular in recent years (positive change)
+popular_genres_recent_years <- success_by_genre_comparison |>
+    filter(change_in_success > 0)
+
+# View the genres that have become more popular
+popular_genres_recent_years
+```
+```{r}
+#Task 5: Movie Pitch
+# Define the pitch text
+pitch <- "
+<b>Title:</b> <i>Shadows in the Horizon</i><br>
+<br>
+<b>Plot Overview:</b> In a dystopian future where artificial intelligence has gained near-total control over human society, a group of unlikely heroes comes together to dismantle the system that has suppressed freedom for decades. Their journey takes them through moral dilemmas, high-stakes battles, and the ultimate realization that the enemy may not be as simple as it seems.<br>
+<br>
+<b>Why This Team?</b><br>
+<b>Michael B. Jordan:</b> Known for his incredible performances in films like <i>Creed</i> and <i>Black Panther</i>, Michael B. Jordan brings intensity and emotional depth to the lead role. His ability to embody both strength and vulnerability makes him the perfect choice to lead a rebellion against an all-powerful system.<br>
+<b>Scarlett Johansson:</b> With her iconic performances in <i>Lucy</i> and the <i>Avengers</i> series, Scarlett Johansson brings both charisma and complexity to the role of a former AI scientist who questions her past decisions. Her experience in action-packed, sci-fi roles makes her an invaluable part of the cast.<br>
+<b>Denis Villeneuve:</b> As the visionary director behind <i>Blade Runner 2049</i> and <i>Dune</i>, Denis Villeneuve is the ideal choice to bring this dark, futuristic world to life. His exceptional ability to combine stunning visuals with intricate storytelling will elevate <i>Shadows in the Horizon</i> beyond a typical sci-fi film.<br>
+<br>
+<b>Supporting Data:</b><br>
+We have identified key personnel whose past projects in the action/sci-fi genres have been immensely successful, as shown by both IMDb ratings and our custom success metric. Below is a graphical representation of their success:<br>"
+```
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Sample data for past successful projects
+personnel_success <- data.frame(
+  name = c("Michael B. Jordan", "Michael B. Jordan", "Scarlett Johansson", "Scarlett Johansson", "Denis Villeneuve", "Denis Villeneuve"),
+  movie = c("Black Panther", "Creed", "Lucy", "Avengers: Endgame", "Blade Runner 2049", "Dune"),
+  imdb_rating = c(7.3, 7.6, 6.4, 8.4, 8.0, 8.2),
+  success_metric = c(8.1, 7.9, 6.5, 9.0, 8.4, 8.5)
+)
+
+# Create the graph
+ggplot(personnel_success, aes(x = movie, y = success_metric, fill = name)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = round(success_metric, 1)), vjust = -0.5, color = "black") +
+  labs(title = "Success Metrics of Key Personnel's Past Projects",
+       x = "Movie",
+       y = "Success Metric",
+       fill = "Personnel") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r}
+# Table for key personnel's past successful projects
+table_data <- personnel_success %>%
+  select(name, movie, imdb_rating, success_metric) %>%
+  arrange(desc(success_metric))
+
+# Display table as output
+library(knitr)
+kable(table_data, col.names = c("Name", "Movie", "IMDb Rating", "Success Metric"),
+      caption = "IMDb Ratings and Success Metrics of Key Personnel's Past Projects")
+```
+```{r}
+#Task 6
+#Finding a Classic movie
+# Assuming TITLE_BASICS contains the movie data and TITLE_RATINGS has the ratings data
+library(dplyr)
+
+# Filtering for sci-fi/action movies with high IMDb rating and vote count, not remade recently
+classic_movies <- TITLE_BASICS %>%
+  # Join with ratings data to get the IMDb rating and number of votes
+  inner_join(TITLE_RATINGS, by = "tconst") %>%
+  # Filter by genres containing 'Sci-Fi' or 'Action'
+  filter(grepl("Sci-Fi|Action", genres)) %>%
+  # Filter for movies with a release date before 1999 (not remade in 25 years)
+  filter(startYear < 1999) %>%
+  # Filter for movies with a high average rating and large number of votes
+  filter(averageRating >= 7.5, numVotes > 50000) %>%
+  arrange(desc(averageRating), desc(numVotes)) %>%
+  select(primaryTitle, startYear, genres, averageRating, numVotes)
+
+# Display top 5 classic movies
+head(classic_movies, 5)
+```
+```{r}
+#LETS CHOOSE!: Star Wars: Episode V - The Empire Strikes Back
+# Assuming TITLE_BASICS has the movie data, TITLE_PRINCIPALS contains personnel data, and NAME_BASICS has names and birth/death years
+
+library(dplyr)
+
+# Get the tconst for "Star Wars: Episode V - The Empire Strikes Back"
+star_wars_tconst <- TITLE_BASICS %>%
+  filter(primaryTitle == "Star Wars: Episode V - The Empire Strikes Back" & startYear == 1980) %>%
+  select(tconst)
+
+# Check if any key personnel (actors, directors, writers) from the movie are still alive
+star_wars_personnel <- TITLE_PRINCIPALS %>%
+  filter(tconst == star_wars_tconst$tconst) %>%
+  inner_join(NAME_BASICS, by = "nconst") %>%
+  filter(category %in% c("actor", "director", "writer")) %>%
+  select(primaryName, birthYear, deathYear, category)
+
+# Filter to check if they are still alive (deathYear is NA)
+living_star_wars_personnel <- star_wars_personnel %>%
+  filter(is.na(deathYear))
+
+# Display living key personnel
+living_star_wars_personnel
+```
+```{r}
+# Create a short paragraph explaining the casting choice and legal department contact
+paragraph <- "
+We have successfully contacted the legal departments to secure the rights to remake the iconic 'Star Wars: Episode V - The Empire Strikes Back'. 
+This classic film will be re-envisioned with the visionary director Denis Villeneuve, whose expertise in handling large-scale sci-fi epics will make the perfect fit for a remake.
+With Michael B. Jordan as the charismatic and action-driven lead, we believe he will bring a fresh, modern interpretation to the role of a young Jedi. 
+Scarlett Johansson, with her versatility and experience in sci-fi blockbusters, will add depth to the character of Princess Leia, providing both strength and emotional gravity. 
+This combination of talent and creative direction ensures that the remake will honor the original's legacy while appealing to both long-time fans and new audiences alike.
+"
+
+# Print paragraph
+cat(paragraph)
+```
+```{r}
+#Task 7
+# Elevator pitch paragraph
+pitch <- "
+After a very analysis of market trends and key personnel, I am confident that our proposed remake of 'Star Wars: Episode V - The Empire Strikes Back' will be a major success. 
+First, the sci-fi genre continues to thrive in our time, with massive box office successes driven by cutting-edge visual effects and nostalgic storytelling, capturing the hearts of viewers of all ages. Denis Villeneuve, known for his visionary work in 'Blade Runner 2049' and 'Dune,' has a proven track record in crafting visually stunning and deeply engaging sci-fi epics. His directorial style aligns perfectly with the scale and depth required to reimagine the Star Wars universe.
+Secondly, we have secured tentative interest from two A-list actors. Michael B. Jordan, a rising star in action and adventure films, will bring new energy to the role of the young Jedi. Scarlett Johansson, a versatile actress with numerous successful sci-fi credits, will redefine the role of Princess Leia, bringing emotional depth and charisma to the screen.
+Lastly, 'Star Wars: Episode V' remains an iconic film with a massive fanbase. A modern, high-quality remake has the potential to capture both new audiences and long-time fans, making this project not only artistically exciting but commercially promising. Let's greenlight this project and bring this timeless tale back to life!
+From Denis Villeneuve, the visionary mind behind 'Dune' and 'Blade Runner 2049'; and 
+From Michael B. Jordan, beloved star of 'Creed' and 'Black Panther'; and 
+From Scarlett Johansson, Hollywood icon of sci-fi hits like 'Lucy' and 'The Avengers'; 
+Comes the timeless tale of 'Star Wars: Episode V - The Empire Strikes Back.' 
+
+A story of rebellion, hope, and destiny, coming soon to a theater near you.
+
+With Michael B. Jordan set to bring new energy to the role of a young Jedi and Scarlett Johansson redefining the iconic Princess Leia, this remake promises to captivate both longtime fans and new audiences. Let's greenlight this project and bring this timeless tale back to life!"
+# Print pitch
+cat(pitch)
+```
