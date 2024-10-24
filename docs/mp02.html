@@ -240,13 +240,13 @@ dbl (1): ordering
 <div class="cell-output cell-output-stdout">
 <pre><code>
 The downloaded binary packages are in
-    /var/folders/55/x9_x3zvj66q6mf2n12kmq6mm0000gn/T//RtmpNEvFYD/downloaded_packages</code></pre>
+    /var/folders/55/x9_x3zvj66q6mf2n12kmq6mm0000gn/T//RtmpJE4vkM/downloaded_packages</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"stringr"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 The downloaded binary packages are in
-    /var/folders/55/x9_x3zvj66q6mf2n12kmq6mm0000gn/T//RtmpNEvFYD/downloaded_packages</code></pre>
+    /var/folders/55/x9_x3zvj66q6mf2n12kmq6mm0000gn/T//RtmpJE4vkM/downloaded_packages</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -275,7 +275,7 @@ Attaching package: 'dplyr'</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 The downloaded binary packages are in
-    /var/folders/55/x9_x3zvj66q6mf2n12kmq6mm0000gn/T//RtmpNEvFYD/downloaded_packages</code></pre>
+    /var/folders/55/x9_x3zvj66q6mf2n12kmq6mm0000gn/T//RtmpJE4vkM/downloaded_packages</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -660,6 +660,678 @@ $ knownForTitles    &lt;chr&gt; "tt0072308,tt0050419,tt0053137,tt0027125", "tt00
 <span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"success_metric=averageRating×log(numVotes) "</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "success_metric=averageRating×log(numVotes) "</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a new 'success_metric' column to the TITLE_RATINGS table</span></span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>TITLE_RATINGS <span class="ot">&lt;-</span> TITLE_RATINGS <span class="sc">|&gt;</span></span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">success_metric =</span> averageRating <span class="sc">*</span> <span class="fu">log10</span>(numVotes))</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a><span class="co"># View the updated table</span></span>
+<span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(TITLE_RATINGS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     tconst averageRating numVotes success_metric
+1 tt0000001           5.7     2096       18.93193
+2 tt0000002           5.6      283       13.73000
+3 tt0000003           6.5     2103       21.59846
+4 tt0000004           5.4      183       12.21724
+5 tt0000005           6.2     2839       21.40963
+6 tt0000006           5.0      197       11.47233</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="co">#1 Get the top 5-10 movies by success_metric</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>top_movies <span class="ot">&lt;-</span> TITLE_RATINGS <span class="sc">|&gt;</span></span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(TITLE_BASICS, <span class="at">by =</span> <span class="st">"tconst"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(titleType <span class="sc">==</span> <span class="st">"movie"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(success_metric)) <span class="sc">|&gt;</span></span>
+<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(primaryTitle, averageRating, numVotes, success_metric) <span class="sc">|&gt;</span></span>
+<span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="dv">10</span>)</span>
+<span id="cb69-8"><a href="#cb69-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-9"><a href="#cb69-9" aria-hidden="true" tabindex="-1"></a>top_movies</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                        primaryTitle averageRating numVotes
+1                           The Shawshank Redemption           9.3  2952034
+2                                    The Dark Knight           9.0  2933285
+3                                      The Godfather           9.2  2057905
+4      The Lord of the Rings: The Return of the King           9.0  2020924
+5                                       Pulp Fiction           8.9  2266929
+6  The Lord of the Rings: The Fellowship of the Ring           8.9  2050527
+7                                         Fight Club           8.8  2383873
+8                                       Forrest Gump           8.8  2309567
+9                                   Schindler's List           9.0  1480923
+10                             The Godfather Part II           9.0  1390693
+   success_metric
+1        60.17213
+2        58.20619
+3        58.08351
+4        56.74995
+5        56.56340
+6        56.17560
+7        56.12009
+8        55.99907
+9        55.53479
+10       55.28908</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="co">#2 Get 3-5 movies with high numVotes but low success_metric</span></span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>poor_movies <span class="ot">&lt;-</span> TITLE_RATINGS <span class="sc">|&gt;</span></span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(TITLE_BASICS, <span class="at">by =</span> <span class="st">"tconst"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(titleType <span class="sc">==</span> <span class="st">"movie"</span>, numVotes <span class="sc">&gt;</span> <span class="dv">100000</span>) <span class="sc">|&gt;</span></span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(success_metric) <span class="sc">|&gt;</span></span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(primaryTitle, averageRating, numVotes, success_metric) <span class="sc">|&gt;</span></span>
+<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="dv">5</span>)</span>
+<span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-9"><a href="#cb71-9" aria-hidden="true" tabindex="-1"></a>poor_movies</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       primaryTitle averageRating numVotes success_metric
+1             Radhe           1.9   180237       9.986104
+2        Epic Movie           2.4   110317      12.102342
+3         Adipurush           2.7   134372      13.846434
+4 Meet the Spartans           2.8   112318      14.141258
+5          365 Days           3.3   100887      16.512656</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co">#3 # Example: Check top movies for a prestige actor like Leonardo DiCaprio</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>prestige_actor_movies <span class="ot">&lt;-</span> TITLE_PRINCIPALS <span class="sc">|&gt;</span></span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(nconst <span class="sc">==</span> <span class="st">"nm0000138"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(TITLE_RATINGS, <span class="at">by =</span> <span class="st">"tconst"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(TITLE_BASICS, <span class="at">by =</span> <span class="st">"tconst"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(titleType <span class="sc">==</span> <span class="st">"movie"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(success_metric)) <span class="sc">|&gt;</span></span>
+<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(primaryTitle, averageRating, numVotes, success_metric)</span>
+<span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-10"><a href="#cb73-10" aria-hidden="true" tabindex="-1"></a>prestige_actor_movies</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                  primaryTitle averageRating numVotes success_metric
+1                 The Departed           8.5  1448503       52.36781
+2          Catch Me If You Can           8.1  1124309       49.01217
+3                      Titanic           7.9  1308621       48.32283
+4                Blood Diamond           8.0   595376       46.19833
+5            Gangs of New York           7.5   479696       42.60725
+6                  The Aviator           7.5   388848       41.92335
+7  What's Eating Gilbert Grape           7.7   257663       41.66510
+8           Revolutionary Road           7.3   227486       39.10577
+9                 Body of Lies           7.0   241936       37.68590
+10      The Basketball Diaries           7.3   123446       37.16778
+11              Romeo + Juliet           6.7   247954       36.14229
+12                   The Beach           6.6   257229       35.70811
+13             This Boy's Life           7.3    59230       34.83955
+14    The Man in the Iron Mask           6.5   181268       34.17909
+15    The Man in the Iron Mask           6.5   181268       34.17909
+16      The Quick and the Dead           6.5   105260       32.64471
+17               Marvin's Room           6.7    30451       30.04013
+18                   Celebrity           6.3    28731       28.08761
+19               The 11th Hour           7.2     5949       27.17600
+20               The 11th Hour           7.2     5949       27.17600
+21               The 11th Hour           7.2     5949       27.17600
+22               Total Eclipse           6.4    17031       27.07994
+23                  Poison Ivy           5.4    20502       23.28370
+24                  Don's Plum           5.5     4838       20.26566
+25                  Critters 3           4.5    13540       18.59228
+26            Gardener of Eden           6.0     1074       18.18603</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="co">#4 Another Spot check : Comedy Shows/Movies !</span></span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Check top Comedy movies by success metric</span></span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>top_comedy_movies <span class="ot">&lt;-</span> TITLE_BASICS <span class="sc">|&gt;</span></span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"Comedy"</span>, genres)) <span class="sc">|&gt;</span></span>
+<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(TITLE_RATINGS, <span class="at">by =</span> <span class="st">"tconst"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(success_metric)) <span class="sc">|&gt;</span></span>
+<span id="cb75-8"><a href="#cb75-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(primaryTitle, averageRating, numVotes, success_metric) <span class="sc">|&gt;</span></span>
+<span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="dv">5</span>)</span>
+<span id="cb75-10"><a href="#cb75-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-11"><a href="#cb75-11" aria-hidden="true" tabindex="-1"></a>top_comedy_movies</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>             primaryTitle averageRating numVotes success_metric
+1                 Friends           8.9  1112067       53.81057
+2              The Office           9.0   740423       52.82532
+3      Back to the Future           8.5  1337382       52.07317
+4                The Boys           8.7   728781       51.00459
+5 The Wolf of Wall Street           8.2  1626012       50.93121</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="co">#5 # Analyze the distribution of success_metric to find a good threshold</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(TITLE_RATINGS<span class="sc">$</span>success_metric, <span class="at">probs =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      0%      10%      20%      30%      40%      50%      60%      70% 
+ 2.00000 11.90122 13.94983 15.28622 16.37163 17.47128 18.74787 20.32191 
+     80%      90%     100% 
+22.46482 26.00245 60.28887 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set a success threshold (e.g., movies in the top 20% of success_metric)</span></span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>success_threshold <span class="ot">&lt;-</span> <span class="fu">quantile</span>(TITLE_RATINGS<span class="sc">$</span>success_metric, <span class="fl">0.8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Task 4: Trends In Success Over Time</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Add 'decade' column based on the startYear</span></span>
+<span id="cb80-7"><a href="#cb80-7" aria-hidden="true" tabindex="-1"></a>TITLE_BASICS <span class="ot">&lt;-</span> TITLE_BASICS <span class="sc">|&gt;</span></span>
+<span id="cb80-8"><a href="#cb80-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">decade =</span> <span class="fu">floor</span>(startYear <span class="sc">/</span> <span class="dv">10</span>) <span class="sc">*</span> <span class="dv">10</span>)</span>
+<span id="cb80-9"><a href="#cb80-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-10"><a href="#cb80-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Join with TITLE_RATINGS to include the success metric</span></span>
+<span id="cb80-11"><a href="#cb80-11" aria-hidden="true" tabindex="-1"></a>title_ratings_decade <span class="ot">&lt;-</span> TITLE_BASICS <span class="sc">|&gt;</span></span>
+<span id="cb80-12"><a href="#cb80-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(TITLE_RATINGS, <span class="at">by =</span> <span class="st">"tconst"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb80-13"><a href="#cb80-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(titleType <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"movie"</span>, <span class="st">"tvSeries"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb80-14"><a href="#cb80-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(primaryTitle, titleType, startYear, genres, decade, averageRating, numVotes, success_metric)</span>
+<span id="cb80-15"><a href="#cb80-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-16"><a href="#cb80-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter for successful projects based on your threshold (set the threshold based on your analysis)</span></span>
+<span id="cb80-17"><a href="#cb80-17" aria-hidden="true" tabindex="-1"></a>success_threshold <span class="ot">&lt;-</span> <span class="fu">quantile</span>(title_ratings_decade<span class="sc">$</span>success_metric, <span class="fl">0.8</span>) <span class="co"># e.g., top 20%</span></span>
+<span id="cb80-18"><a href="#cb80-18" aria-hidden="true" tabindex="-1"></a>successful_titles <span class="ot">&lt;-</span> title_ratings_decade <span class="sc">|&gt;</span></span>
+<span id="cb80-19"><a href="#cb80-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(success_metric <span class="sc">&gt;=</span> success_threshold)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Task 4</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a><span class="co">#1 What was the genre with the most “successes” in each decade?</span></span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Split genres into separate rows since some movies have multiple genres</span></span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a>successful_by_genre_decade <span class="ot">&lt;-</span> successful_titles <span class="sc">|&gt;</span></span>
+<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">separate_rows</span>(genres, <span class="at">sep =</span> <span class="st">","</span>) <span class="sc">|&gt;</span></span>
+<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(decade, genres) <span class="sc">|&gt;</span></span>
+<span id="cb81-10"><a href="#cb81-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">num_successes =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">'drop'</span>)</span>
+<span id="cb81-11"><a href="#cb81-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-12"><a href="#cb81-12" aria-hidden="true" tabindex="-1"></a><span class="co">#1 Find the genre with the most successes in each decade</span></span>
+<span id="cb81-13"><a href="#cb81-13" aria-hidden="true" tabindex="-1"></a>top_genre_by_decade <span class="ot">&lt;-</span> successful_by_genre_decade <span class="sc">|&gt;</span></span>
+<span id="cb81-14"><a href="#cb81-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(decade) <span class="sc">|&gt;</span></span>
+<span id="cb81-15"><a href="#cb81-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">slice_max</span>(num_successes, <span class="at">n =</span> <span class="dv">1</span>)</span>
+<span id="cb81-16"><a href="#cb81-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-17"><a href="#cb81-17" aria-hidden="true" tabindex="-1"></a>top_genre_by_decade</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 3
+# Groups:   decade [12]
+   decade genres num_successes
+    &lt;dbl&gt; &lt;chr&gt;          &lt;int&gt;
+ 1   1910 Drama             13
+ 2   1920 Drama             96
+ 3   1930 Drama            266
+ 4   1940 Drama            420
+ 5   1950 Drama            609
+ 6   1960 Drama            806
+ 7   1970 Drama            902
+ 8   1980 Drama           1096
+ 9   1990 Drama           1846
+10   2000 Drama           3182
+11   2010 Drama            435
+12   2020 Drama            755</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Task 4</span></span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot: Genre with the most successes by decade</span></span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(top_genre_by_decade, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(decade), <span class="at">y =</span> num_successes, <span class="at">fill =</span> genres)) <span class="sc">+</span></span>
+<span id="cb83-4"><a href="#cb83-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_col</span>() <span class="sc">+</span></span>
+<span id="cb83-5"><a href="#cb83-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Top Genre with Most Successes by Decade"</span>,</span>
+<span id="cb83-6"><a href="#cb83-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">x =</span> <span class="st">"Decade"</span>, <span class="at">y =</span> <span class="st">"Number of Successes"</span>,</span>
+<span id="cb83-7"><a href="#cb83-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">fill =</span> <span class="st">"Genre"</span>) <span class="sc">+</span></span>
+<span id="cb83-8"><a href="#cb83-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mp02_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="co">#2 What genre consistently has the most “successes”? What genre used to reliably produced “successes” and has fallen out of favor?</span></span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Summarize successes by genre across all decades</span></span>
+<span id="cb84-4"><a href="#cb84-4" aria-hidden="true" tabindex="-1"></a>total_success_by_genre_decade <span class="ot">&lt;-</span> successful_titles <span class="sc">|&gt;</span></span>
+<span id="cb84-5"><a href="#cb84-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">separate_rows</span>(genres, <span class="at">sep =</span> <span class="st">","</span>) <span class="sc">|&gt;</span></span>
+<span id="cb84-6"><a href="#cb84-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(decade, genres) <span class="sc">|&gt;</span></span>
+<span id="cb84-7"><a href="#cb84-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">num_successes =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">'drop'</span>)</span>
+<span id="cb84-8"><a href="#cb84-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb84-9"><a href="#cb84-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Find the genre with the most successes in each decade</span></span>
+<span id="cb84-10"><a href="#cb84-10" aria-hidden="true" tabindex="-1"></a>top_genre_by_decade <span class="ot">&lt;-</span> total_success_by_genre_decade <span class="sc">|&gt;</span></span>
+<span id="cb84-11"><a href="#cb84-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(decade) <span class="sc">|&gt;</span></span>
+<span id="cb84-12"><a href="#cb84-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">slice_max</span>(num_successes, <span class="at">n =</span> <span class="dv">1</span>, <span class="at">with_ties =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb84-13"><a href="#cb84-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb84-14"><a href="#cb84-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb84-15"><a href="#cb84-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Summarize the frequency of how often each genre is the top genre across decades</span></span>
+<span id="cb84-16"><a href="#cb84-16" aria-hidden="true" tabindex="-1"></a>consistent_top_genres <span class="ot">&lt;-</span> top_genre_by_decade <span class="sc">|&gt;</span></span>
+<span id="cb84-17"><a href="#cb84-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(genres) <span class="sc">|&gt;</span></span>
+<span id="cb84-18"><a href="#cb84-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">times_top_genre =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">|&gt;</span></span>
+<span id="cb84-19"><a href="#cb84-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(times_top_genre))</span>
+<span id="cb84-20"><a href="#cb84-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb84-21"><a href="#cb84-21" aria-hidden="true" tabindex="-1"></a><span class="co"># View the result</span></span>
+<span id="cb84-22"><a href="#cb84-22" aria-hidden="true" tabindex="-1"></a>consistent_top_genres</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  genres times_top_genre
+  &lt;chr&gt;            &lt;int&gt;
+1 Drama               12</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 4: Compare successes in earlier decades to recent decades (since 2010)</span></span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a flag to distinguish early and recent decades</span></span>
+<span id="cb86-4"><a href="#cb86-4" aria-hidden="true" tabindex="-1"></a>successful_by_genre_early_recent <span class="ot">&lt;-</span> total_success_by_genre_decade <span class="sc">|&gt;</span></span>
+<span id="cb86-5"><a href="#cb86-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">period =</span> <span class="fu">ifelse</span>(decade <span class="sc">&lt;</span> <span class="dv">2010</span>, <span class="st">"Early Decades"</span>, <span class="st">"Recent Decades"</span>))</span>
+<span id="cb86-6"><a href="#cb86-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-7"><a href="#cb86-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarize successes by genre in early and recent periods</span></span>
+<span id="cb86-8"><a href="#cb86-8" aria-hidden="true" tabindex="-1"></a>success_by_genre_period <span class="ot">&lt;-</span> successful_by_genre_early_recent <span class="sc">|&gt;</span></span>
+<span id="cb86-9"><a href="#cb86-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(genres, period) <span class="sc">|&gt;</span></span>
+<span id="cb86-10"><a href="#cb86-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">total_successes =</span> <span class="fu">sum</span>(num_successes), <span class="at">.groups =</span> <span class="st">'drop'</span>)</span>
+<span id="cb86-11"><a href="#cb86-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-12"><a href="#cb86-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Spread to make it easier to compare early vs. recent</span></span>
+<span id="cb86-13"><a href="#cb86-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb86-14"><a href="#cb86-14" aria-hidden="true" tabindex="-1"></a>success_by_genre_period <span class="ot">&lt;-</span> success_by_genre_period <span class="sc">|&gt;</span></span>
+<span id="cb86-15"><a href="#cb86-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> period, <span class="at">values_from =</span> total_successes, <span class="at">values_fill =</span> <span class="dv">0</span>)</span>
+<span id="cb86-16"><a href="#cb86-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-17"><a href="#cb86-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the difference in success between early and recent periods</span></span>
+<span id="cb86-18"><a href="#cb86-18" aria-hidden="true" tabindex="-1"></a>success_by_genre_period <span class="ot">&lt;-</span> success_by_genre_period <span class="sc">|&gt;</span></span>
+<span id="cb86-19"><a href="#cb86-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">change_in_success =</span> <span class="st">`</span><span class="at">Recent Decades</span><span class="st">`</span> <span class="sc">-</span> <span class="st">`</span><span class="at">Early Decades</span><span class="st">`</span>) <span class="sc">|&gt;</span></span>
+<span id="cb86-20"><a href="#cb86-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(change_in_success)</span>
+<span id="cb86-21"><a href="#cb86-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-22"><a href="#cb86-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Genres that have fallen out of favor (negative change in success)</span></span>
+<span id="cb86-23"><a href="#cb86-23" aria-hidden="true" tabindex="-1"></a>fallen_genres <span class="ot">&lt;-</span> success_by_genre_period <span class="sc">|&gt;</span></span>
+<span id="cb86-24"><a href="#cb86-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(change_in_success <span class="sc">&lt;</span> <span class="dv">0</span>)</span>
+<span id="cb86-25"><a href="#cb86-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-26"><a href="#cb86-26" aria-hidden="true" tabindex="-1"></a><span class="co"># View genres that have fallen out of favor</span></span>
+<span id="cb86-27"><a href="#cb86-27" aria-hidden="true" tabindex="-1"></a>fallen_genres</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 28 × 4
+   genres    `Early Decades` `Recent Decades` change_in_success
+   &lt;chr&gt;               &lt;int&gt;            &lt;int&gt;             &lt;int&gt;
+ 1 Drama                9236             1190             -8046
+ 2 Comedy               5956              612             -5344
+ 3 Romance              2894              266             -2628
+ 4 Crime                2886              386             -2500
+ 5 Action               2642              470             -2172
+ 6 Adventure            2164              296             -1868
+ 7 Thriller             1451              275             -1176
+ 8 Mystery              1238              212             -1026
+ 9 Family               1006               71              -935
+10 Animation            1069              147              -922
+# ℹ 18 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load necessary libraries</span></span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb88-5"><a href="#cb88-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-6"><a href="#cb88-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Assuming successful_by_genre_early_recent is already created as per your code</span></span>
+<span id="cb88-7"><a href="#cb88-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-8"><a href="#cb88-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a flag to distinguish early and recent decades</span></span>
+<span id="cb88-9"><a href="#cb88-9" aria-hidden="true" tabindex="-1"></a>successful_by_genre_early_recent <span class="ot">&lt;-</span> total_success_by_genre_decade <span class="sc">|&gt;</span></span>
+<span id="cb88-10"><a href="#cb88-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">period =</span> <span class="fu">ifelse</span>(decade <span class="sc">&lt;</span> <span class="dv">2010</span>, <span class="st">"Early Decades"</span>, <span class="st">"Recent Decades"</span>))</span>
+<span id="cb88-11"><a href="#cb88-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-12"><a href="#cb88-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarize successes by genre in early and recent periods</span></span>
+<span id="cb88-13"><a href="#cb88-13" aria-hidden="true" tabindex="-1"></a>success_by_genre_period <span class="ot">&lt;-</span> successful_by_genre_early_recent <span class="sc">|&gt;</span></span>
+<span id="cb88-14"><a href="#cb88-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(genres, period) <span class="sc">|&gt;</span></span>
+<span id="cb88-15"><a href="#cb88-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">total_successes =</span> <span class="fu">sum</span>(num_successes), <span class="at">.groups =</span> <span class="st">'drop'</span>)</span>
+<span id="cb88-16"><a href="#cb88-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-17"><a href="#cb88-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Spread to make it easier to compare early vs. recent</span></span>
+<span id="cb88-18"><a href="#cb88-18" aria-hidden="true" tabindex="-1"></a>success_by_genre_period <span class="ot">&lt;-</span> success_by_genre_period <span class="sc">|&gt;</span></span>
+<span id="cb88-19"><a href="#cb88-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> period, <span class="at">values_from =</span> total_successes, <span class="at">values_fill =</span> <span class="dv">0</span>)</span>
+<span id="cb88-20"><a href="#cb88-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb88-21"><a href="#cb88-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a line plot to visualize successes over periods</span></span>
+<span id="cb88-22"><a href="#cb88-22" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(success_by_genre_period, <span class="fu">aes</span>(<span class="at">x =</span> genres)) <span class="sc">+</span></span>
+<span id="cb88-23"><a href="#cb88-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="st">`</span><span class="at">Early Decades</span><span class="st">`</span>, <span class="at">color =</span> <span class="st">"Early Decades"</span>), <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb88-24"><a href="#cb88-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="st">`</span><span class="at">Recent Decades</span><span class="st">`</span>, <span class="at">color =</span> <span class="st">"Recent Decades"</span>), <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb88-25"><a href="#cb88-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="st">`</span><span class="at">Early Decades</span><span class="st">`</span>, <span class="at">color =</span> <span class="st">"Early Decades"</span>), <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb88-26"><a href="#cb88-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="st">`</span><span class="at">Recent Decades</span><span class="st">`</span>, <span class="at">color =</span> <span class="st">"Recent Decades"</span>), <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb88-27"><a href="#cb88-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Total Successes by Genre: Early vs. Recent Decades"</span>,</span>
+<span id="cb88-28"><a href="#cb88-28" aria-hidden="true" tabindex="-1"></a>         <span class="at">x =</span> <span class="st">"Genres"</span>,</span>
+<span id="cb88-29"><a href="#cb88-29" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> <span class="st">"Total Successes"</span>,</span>
+<span id="cb88-30"><a href="#cb88-30" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"Period"</span>) <span class="sc">+</span></span>
+<span id="cb88-31"><a href="#cb88-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb88-32"><a href="#cb88-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+ℹ Please use `linewidth` instead.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_line()`: Each group consists of only one observation.
+ℹ Do you need to adjust the group aesthetic?
+`geom_line()`: Each group consists of only one observation.
+ℹ Do you need to adjust the group aesthetic?</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mp02_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Task 4 </span></span>
+<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a><span class="co">#3 What genre has produced the most “successes” since 2010? Does it have the highest success rate or does it only have a large number of successes because there are many productions in that genre?</span></span>
+<span id="cb91-3"><a href="#cb91-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-4"><a href="#cb91-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Filter for titles since 2010</span></span>
+<span id="cb91-5"><a href="#cb91-5" aria-hidden="true" tabindex="-1"></a>titles_since_2010 <span class="ot">&lt;-</span> successful_titles <span class="sc">|&gt;</span></span>
+<span id="cb91-6"><a href="#cb91-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(decade <span class="sc">&gt;=</span> <span class="dv">2010</span>)</span>
+<span id="cb91-7"><a href="#cb91-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-8"><a href="#cb91-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Separate rows by genre for proper counting</span></span>
+<span id="cb91-9"><a href="#cb91-9" aria-hidden="true" tabindex="-1"></a>titles_genre_split <span class="ot">&lt;-</span> titles_since_2010 <span class="sc">|&gt;</span></span>
+<span id="cb91-10"><a href="#cb91-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">separate_rows</span>(genres, <span class="at">sep =</span> <span class="st">","</span>)</span>
+<span id="cb91-11"><a href="#cb91-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-12"><a href="#cb91-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Count total titles produced in each genre since 2010</span></span>
+<span id="cb91-13"><a href="#cb91-13" aria-hidden="true" tabindex="-1"></a>total_titles_by_genre <span class="ot">&lt;-</span> TITLE_BASICS <span class="sc">|&gt;</span></span>
+<span id="cb91-14"><a href="#cb91-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(startYear <span class="sc">&gt;=</span> <span class="dv">2010</span>) <span class="sc">|&gt;</span></span>
+<span id="cb91-15"><a href="#cb91-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">separate_rows</span>(genres, <span class="at">sep =</span> <span class="st">","</span>) <span class="sc">|&gt;</span></span>
+<span id="cb91-16"><a href="#cb91-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(genres) <span class="sc">|&gt;</span></span>
+<span id="cb91-17"><a href="#cb91-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">total_titles =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">'drop'</span>)</span>
+<span id="cb91-18"><a href="#cb91-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-19"><a href="#cb91-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 4: Count successful titles (based on your custom success metric) per genre since 2010</span></span>
+<span id="cb91-20"><a href="#cb91-20" aria-hidden="true" tabindex="-1"></a>successful_titles_by_genre <span class="ot">&lt;-</span> titles_genre_split <span class="sc">|&gt;</span></span>
+<span id="cb91-21"><a href="#cb91-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(genres) <span class="sc">|&gt;</span></span>
+<span id="cb91-22"><a href="#cb91-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">successful_titles =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">'drop'</span>)</span>
+<span id="cb91-23"><a href="#cb91-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-24"><a href="#cb91-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 5: Merge the total titles and successful titles data</span></span>
+<span id="cb91-25"><a href="#cb91-25" aria-hidden="true" tabindex="-1"></a>genre_success_data <span class="ot">&lt;-</span> total_titles_by_genre <span class="sc">|&gt;</span></span>
+<span id="cb91-26"><a href="#cb91-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(successful_titles_by_genre, <span class="at">by =</span> <span class="st">"genres"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb91-27"><a href="#cb91-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="at">successful_titles =</span> <span class="dv">0</span>)) <span class="co"># If no successes, set to 0</span></span>
+<span id="cb91-28"><a href="#cb91-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-29"><a href="#cb91-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 6: Calculate the success rate for each genre</span></span>
+<span id="cb91-30"><a href="#cb91-30" aria-hidden="true" tabindex="-1"></a>genre_success_data <span class="ot">&lt;-</span> genre_success_data <span class="sc">|&gt;</span></span>
+<span id="cb91-31"><a href="#cb91-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">success_rate =</span> successful_titles <span class="sc">/</span> total_titles) <span class="sc">|&gt;</span></span>
+<span id="cb91-32"><a href="#cb91-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(successful_titles))</span>
+<span id="cb91-33"><a href="#cb91-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-34"><a href="#cb91-34" aria-hidden="true" tabindex="-1"></a><span class="co"># View the top genres by number of successes</span></span>
+<span id="cb91-35"><a href="#cb91-35" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(genre_success_data, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 4
+   genres      total_titles successful_titles success_rate
+   &lt;chr&gt;              &lt;int&gt;             &lt;int&gt;        &lt;dbl&gt;
+ 1 Drama              10990              1190       0.108 
+ 2 Comedy              6414               612       0.0954
+ 3 Action              4446               470       0.106 
+ 4 Crime               3687               386       0.105 
+ 5 Adventure           3200               296       0.0925
+ 6 Thriller            2322               275       0.118 
+ 7 Romance             2165               266       0.123 
+ 8 Documentary         2205               221       0.100 
+ 9 Mystery             2061               212       0.103 
+10 Biography            690               171       0.248 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Task4</span></span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a><span class="co">#4 What genre has become more popular in recent years?</span></span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Separate genres into individual rows and calculate success by genre and decade</span></span>
+<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-7"><a href="#cb93-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Separate genres and group by decade and genre</span></span>
+<span id="cb93-8"><a href="#cb93-8" aria-hidden="true" tabindex="-1"></a>success_by_genre_decade <span class="ot">&lt;-</span> successful_titles <span class="sc">|&gt;</span></span>
+<span id="cb93-9"><a href="#cb93-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">separate_rows</span>(genres, <span class="at">sep =</span> <span class="st">","</span>) <span class="sc">|&gt;</span></span>
+<span id="cb93-10"><a href="#cb93-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(decade, genres) <span class="sc">|&gt;</span></span>
+<span id="cb93-11"><a href="#cb93-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">num_successes =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">'drop'</span>)</span>
+<span id="cb93-12"><a href="#cb93-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-13"><a href="#cb93-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Categorize periods into "Early Decades" and "Recent Decades" (2010 onwards)</span></span>
+<span id="cb93-14"><a href="#cb93-14" aria-hidden="true" tabindex="-1"></a>success_by_genre_period <span class="ot">&lt;-</span> success_by_genre_decade <span class="sc">|&gt;</span></span>
+<span id="cb93-15"><a href="#cb93-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">period =</span> <span class="fu">ifelse</span>(decade <span class="sc">&lt;</span> <span class="dv">2010</span>, <span class="st">"Early Decades"</span>, <span class="st">"Recent Decades"</span>))</span>
+<span id="cb93-16"><a href="#cb93-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-17"><a href="#cb93-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Summarize the total successes by genre in early vs recent periods</span></span>
+<span id="cb93-18"><a href="#cb93-18" aria-hidden="true" tabindex="-1"></a>success_by_genre_period_summary <span class="ot">&lt;-</span> success_by_genre_period <span class="sc">|&gt;</span></span>
+<span id="cb93-19"><a href="#cb93-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(genres, period) <span class="sc">|&gt;</span></span>
+<span id="cb93-20"><a href="#cb93-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">total_successes =</span> <span class="fu">sum</span>(num_successes), <span class="at">.groups =</span> <span class="st">'drop'</span>)</span>
+<span id="cb93-21"><a href="#cb93-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-22"><a href="#cb93-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 4: Reshape the data to compare success between periods (early vs recent)</span></span>
+<span id="cb93-23"><a href="#cb93-23" aria-hidden="true" tabindex="-1"></a>success_by_genre_comparison <span class="ot">&lt;-</span> success_by_genre_period_summary <span class="sc">|&gt;</span></span>
+<span id="cb93-24"><a href="#cb93-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> period, <span class="at">values_from =</span> total_successes, <span class="at">values_fill =</span> <span class="dv">0</span>)</span>
+<span id="cb93-25"><a href="#cb93-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-26"><a href="#cb93-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 5: Calculate the change in success between early and recent periods</span></span>
+<span id="cb93-27"><a href="#cb93-27" aria-hidden="true" tabindex="-1"></a>success_by_genre_comparison <span class="ot">&lt;-</span> success_by_genre_comparison <span class="sc">|&gt;</span></span>
+<span id="cb93-28"><a href="#cb93-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">change_in_success =</span> <span class="st">`</span><span class="at">Recent Decades</span><span class="st">`</span> <span class="sc">-</span> <span class="st">`</span><span class="at">Early Decades</span><span class="st">`</span>) <span class="sc">|&gt;</span></span>
+<span id="cb93-29"><a href="#cb93-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(change_in_success))</span>
+<span id="cb93-30"><a href="#cb93-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-31"><a href="#cb93-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 6: Identify genres that have become more popular in recent years (positive change)</span></span>
+<span id="cb93-32"><a href="#cb93-32" aria-hidden="true" tabindex="-1"></a>popular_genres_recent_years <span class="ot">&lt;-</span> success_by_genre_comparison <span class="sc">|&gt;</span></span>
+<span id="cb93-33"><a href="#cb93-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(change_in_success <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb93-34"><a href="#cb93-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-35"><a href="#cb93-35" aria-hidden="true" tabindex="-1"></a><span class="co"># View the genres that have become more popular</span></span>
+<span id="cb93-36"><a href="#cb93-36" aria-hidden="true" tabindex="-1"></a>popular_genres_recent_years</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  genres `Early Decades` `Recent Decades` change_in_success
+  &lt;chr&gt;            &lt;int&gt;            &lt;int&gt;             &lt;int&gt;
+1 Short                5                6                 1</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Task 5: Movie Pitch</span></span>
+<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the pitch text</span></span>
+<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a>pitch <span class="ot">&lt;-</span> <span class="st">"</span></span>
+<span id="cb95-4"><a href="#cb95-4" aria-hidden="true" tabindex="-1"></a><span class="st">Title: Shadows in the Horizon</span></span>
+<span id="cb95-5"><a href="#cb95-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-6"><a href="#cb95-6" aria-hidden="true" tabindex="-1"></a><span class="st">Plot Overview: In a dystopian future where artificial intelligence has gained near-total control over human society, a group of unlikely heroes comes together to dismantle the system that has suppressed freedom for decades. Their journey takes them through moral dilemmas, high-stakes battles, and the ultimate realization that the enemy may not be as simple as it seems.</span></span>
+<span id="cb95-7"><a href="#cb95-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-8"><a href="#cb95-8" aria-hidden="true" tabindex="-1"></a><span class="st">Why This Team? Michael B. Jordan is known for his incredible performances in films like Creed and Black Panther. He brings intensity and emotional depth to the lead role, embodying both strength and vulnerability, making him the perfect choice to lead a rebellion against an all-powerful system. Scarlett Johansson, with her iconic performances in Lucy and the Avengers series, adds charisma and complexity to the role of a former AI scientist who questions her past decisions. Her experience in action-packed, sci-fi roles makes her an invaluable part of the cast. Denis Villeneuve, the visionary director behind Blade Runner 2049 and Dune, is ideal for bringing this dark, futuristic world to life. His exceptional ability to combine stunning visuals with intricate storytelling will elevate Shadows in the Horizon beyond a typical sci-fi film.</span></span>
+<span id="cb95-9"><a href="#cb95-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-10"><a href="#cb95-10" aria-hidden="true" tabindex="-1"></a><span class="st">Supporting Data: We have identified key personnel whose past projects in the action/sci-fi genres have been immensely successful, as shown by both IMDb ratings and our custom success metric. Below is a graphical representation of their success:</span></span>
+<span id="cb95-11"><a href="#cb95-11" aria-hidden="true" tabindex="-1"></a><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load necessary libraries</span></span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample data for past successful projects</span></span>
+<span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a>personnel_success <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb96-7"><a href="#cb96-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="fu">c</span>(<span class="st">"Michael B. Jordan"</span>, <span class="st">"Michael B. Jordan"</span>, <span class="st">"Scarlett Johansson"</span>, <span class="st">"Scarlett Johansson"</span>, <span class="st">"Denis Villeneuve"</span>, <span class="st">"Denis Villeneuve"</span>),</span>
+<span id="cb96-8"><a href="#cb96-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">movie =</span> <span class="fu">c</span>(<span class="st">"Black Panther"</span>, <span class="st">"Creed"</span>, <span class="st">"Lucy"</span>, <span class="st">"Avengers: Endgame"</span>, <span class="st">"Blade Runner 2049"</span>, <span class="st">"Dune"</span>),</span>
+<span id="cb96-9"><a href="#cb96-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">imdb_rating =</span> <span class="fu">c</span>(<span class="fl">7.3</span>, <span class="fl">7.6</span>, <span class="fl">6.4</span>, <span class="fl">8.4</span>, <span class="fl">8.0</span>, <span class="fl">8.2</span>),</span>
+<span id="cb96-10"><a href="#cb96-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">success_metric =</span> <span class="fu">c</span>(<span class="fl">8.1</span>, <span class="fl">7.9</span>, <span class="fl">6.5</span>, <span class="fl">9.0</span>, <span class="fl">8.4</span>, <span class="fl">8.5</span>)</span>
+<span id="cb96-11"><a href="#cb96-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb96-12"><a href="#cb96-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-13"><a href="#cb96-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the graph</span></span>
+<span id="cb96-14"><a href="#cb96-14" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(personnel_success, <span class="fu">aes</span>(<span class="at">x =</span> movie, <span class="at">y =</span> success_metric, <span class="at">fill =</span> name)) <span class="sc">+</span></span>
+<span id="cb96-15"><a href="#cb96-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb96-16"><a href="#cb96-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(success_metric, <span class="dv">1</span>)), <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb96-17"><a href="#cb96-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Success Metrics of Key Personnel's Past Projects"</span>,</span>
+<span id="cb96-18"><a href="#cb96-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Movie"</span>,</span>
+<span id="cb96-19"><a href="#cb96-19" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Success Metric"</span>,</span>
+<span id="cb96-20"><a href="#cb96-20" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Personnel"</span>) <span class="sc">+</span></span>
+<span id="cb96-21"><a href="#cb96-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb96-22"><a href="#cb96-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mp02_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Table for key personnel's past successful projects</span></span>
+<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>table_data <span class="ot">&lt;-</span> personnel_success <span class="sc">%&gt;%</span></span>
+<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name, movie, imdb_rating, success_metric) <span class="sc">%&gt;%</span></span>
+<span id="cb97-4"><a href="#cb97-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(success_metric))</span>
+<span id="cb97-5"><a href="#cb97-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb97-6"><a href="#cb97-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Display table as output</span></span>
+<span id="cb97-7"><a href="#cb97-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb97-8"><a href="#cb97-8" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(table_data, <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Name"</span>, <span class="st">"Movie"</span>, <span class="st">"IMDb Rating"</span>, <span class="st">"Success Metric"</span>),</span>
+<span id="cb97-9"><a href="#cb97-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"IMDb Ratings and Success Metrics of Key Personnel's Past Projects"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>IMDb Ratings and Success Metrics of Key Personnel’s Past Projects</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Movie</th>
+<th style="text-align: right;">IMDb Rating</th>
+<th style="text-align: right;">Success Metric</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Scarlett Johansson</td>
+<td style="text-align: left;">Avengers: Endgame</td>
+<td style="text-align: right;">8.4</td>
+<td style="text-align: right;">9.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Denis Villeneuve</td>
+<td style="text-align: left;">Dune</td>
+<td style="text-align: right;">8.2</td>
+<td style="text-align: right;">8.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Denis Villeneuve</td>
+<td style="text-align: left;">Blade Runner 2049</td>
+<td style="text-align: right;">8.0</td>
+<td style="text-align: right;">8.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Michael B. Jordan</td>
+<td style="text-align: left;">Black Panther</td>
+<td style="text-align: right;">7.3</td>
+<td style="text-align: right;">8.1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Michael B. Jordan</td>
+<td style="text-align: left;">Creed</td>
+<td style="text-align: right;">7.6</td>
+<td style="text-align: right;">7.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Scarlett Johansson</td>
+<td style="text-align: left;">Lucy</td>
+<td style="text-align: right;">6.4</td>
+<td style="text-align: right;">6.5</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Task 6</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Finding a Classic movie</span></span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Assuming TITLE_BASICS contains the movie data and TITLE_RATINGS has the ratings data</span></span>
+<span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb98-5"><a href="#cb98-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb98-6"><a href="#cb98-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Filtering for sci-fi/action movies with high IMDb rating and vote count, not remade recently</span></span>
+<span id="cb98-7"><a href="#cb98-7" aria-hidden="true" tabindex="-1"></a>classic_movies <span class="ot">&lt;-</span> TITLE_BASICS <span class="sc">%&gt;%</span></span>
+<span id="cb98-8"><a href="#cb98-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Join with ratings data to get the IMDb rating and number of votes</span></span>
+<span id="cb98-9"><a href="#cb98-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(TITLE_RATINGS, <span class="at">by =</span> <span class="st">"tconst"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb98-10"><a href="#cb98-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter by genres containing 'Sci-Fi' or 'Action'</span></span>
+<span id="cb98-11"><a href="#cb98-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"Sci-Fi|Action"</span>, genres)) <span class="sc">%&gt;%</span></span>
+<span id="cb98-12"><a href="#cb98-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter for movies with a release date before 1999 (not remade in 25 years)</span></span>
+<span id="cb98-13"><a href="#cb98-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(startYear <span class="sc">&lt;</span> <span class="dv">1999</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb98-14"><a href="#cb98-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter for movies with a high average rating and large number of votes</span></span>
+<span id="cb98-15"><a href="#cb98-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(averageRating <span class="sc">&gt;=</span> <span class="fl">7.5</span>, numVotes <span class="sc">&gt;</span> <span class="dv">50000</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb98-16"><a href="#cb98-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(averageRating), <span class="fu">desc</span>(numVotes)) <span class="sc">%&gt;%</span></span>
+<span id="cb98-17"><a href="#cb98-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(primaryTitle, startYear, genres, averageRating, numVotes)</span>
+<span id="cb98-18"><a href="#cb98-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb98-19"><a href="#cb98-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Display top 5 classic movies</span></span>
+<span id="cb98-20"><a href="#cb98-20" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(classic_movies, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                    primaryTitle startYear
+1                    Batman: The Animated Series      1992
+2                                   Cowboy Bebop      1998
+3                                  Dragon Ball Z      1996
+4                                  Dragon Ball Z      1989
+5 Star Wars: Episode V - The Empire Strikes Back      1980
+                      genres averageRating numVotes
+1 Action,Adventure,Animation           9.0   121064
+2 Action,Adventure,Animation           8.9   144704
+3 Action,Adventure,Animation           8.8   153003
+4 Action,Adventure,Animation           8.8    90267
+5   Action,Adventure,Fantasy           8.7  1405462</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="co">#LETS CHOOSE!: Star Wars: Episode V - The Empire Strikes Back</span></span>
+<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Assuming TITLE_BASICS has the movie data, TITLE_PRINCIPALS contains personnel data, and NAME_BASICS has names and birth/death years</span></span>
+<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb100-5"><a href="#cb100-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb100-6"><a href="#cb100-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the tconst for "Star Wars: Episode V - The Empire Strikes Back"</span></span>
+<span id="cb100-7"><a href="#cb100-7" aria-hidden="true" tabindex="-1"></a>star_wars_tconst <span class="ot">&lt;-</span> TITLE_BASICS <span class="sc">%&gt;%</span></span>
+<span id="cb100-8"><a href="#cb100-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(primaryTitle <span class="sc">==</span> <span class="st">"Star Wars: Episode V - The Empire Strikes Back"</span> <span class="sc">&amp;</span> startYear <span class="sc">==</span> <span class="dv">1980</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb100-9"><a href="#cb100-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(tconst)</span>
+<span id="cb100-10"><a href="#cb100-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb100-11"><a href="#cb100-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if any key personnel (actors, directors, writers) from the movie are still alive</span></span>
+<span id="cb100-12"><a href="#cb100-12" aria-hidden="true" tabindex="-1"></a>star_wars_personnel <span class="ot">&lt;-</span> TITLE_PRINCIPALS <span class="sc">%&gt;%</span></span>
+<span id="cb100-13"><a href="#cb100-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(tconst <span class="sc">==</span> star_wars_tconst<span class="sc">$</span>tconst) <span class="sc">%&gt;%</span></span>
+<span id="cb100-14"><a href="#cb100-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(NAME_BASICS, <span class="at">by =</span> <span class="st">"nconst"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb100-15"><a href="#cb100-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(category <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"actor"</span>, <span class="st">"director"</span>, <span class="st">"writer"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb100-16"><a href="#cb100-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(primaryName, birthYear, deathYear, category)</span>
+<span id="cb100-17"><a href="#cb100-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb100-18"><a href="#cb100-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter to check if they are still alive (deathYear is NA)</span></span>
+<span id="cb100-19"><a href="#cb100-19" aria-hidden="true" tabindex="-1"></a>living_star_wars_personnel <span class="ot">&lt;-</span> star_wars_personnel <span class="sc">%&gt;%</span></span>
+<span id="cb100-20"><a href="#cb100-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(deathYear))</span>
+<span id="cb100-21"><a href="#cb100-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb100-22"><a href="#cb100-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Display living key personnel</span></span>
+<span id="cb100-23"><a href="#cb100-23" aria-hidden="true" tabindex="-1"></a>living_star_wars_personnel</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         primaryName birthYear deathYear category
+1        Mark Hamill        NA        NA    actor
+2      Harrison Ford      1942        NA    actor
+3 Billy Dee Williams      1937        NA    actor
+4    Anthony Daniels      1946        NA    actor
+5           Frank Oz      1944        NA    actor
+6    Lawrence Kasdan      1949        NA   writer
+7       George Lucas      1944        NA   writer</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a short paragraph explaining the casting choice and legal department contact</span></span>
+<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a>paragraph <span class="ot">&lt;-</span> <span class="st">"</span></span>
+<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a><span class="st">We have successfully contacted the legal departments to secure the rights to remake the iconic 'Star Wars: Episode V - The Empire Strikes Back'. </span></span>
+<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a><span class="st">This classic film will be re-envisioned with the visionary director Denis Villeneuve, whose expertise in handling large-scale sci-fi epics will make the perfect fit for a remake.</span></span>
+<span id="cb102-5"><a href="#cb102-5" aria-hidden="true" tabindex="-1"></a><span class="st">With Michael B. Jordan as the charismatic and action-driven lead, we believe he will bring a fresh, modern interpretation to the role of a young Jedi. </span></span>
+<span id="cb102-6"><a href="#cb102-6" aria-hidden="true" tabindex="-1"></a><span class="st">Scarlett Johansson, with her versatility and experience in sci-fi blockbusters, will add depth to the character of Princess Leia, providing both strength and emotional gravity. </span></span>
+<span id="cb102-7"><a href="#cb102-7" aria-hidden="true" tabindex="-1"></a><span class="st">This combination of talent and creative direction ensures that the remake will honor the original's legacy while appealing to both long-time fans and new audiences alike.</span></span>
+<span id="cb102-8"><a href="#cb102-8" aria-hidden="true" tabindex="-1"></a><span class="st">"</span></span>
+<span id="cb102-9"><a href="#cb102-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb102-10"><a href="#cb102-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Print paragraph</span></span>
+<span id="cb102-11"><a href="#cb102-11" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(paragraph)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+We have successfully contacted the legal departments to secure the rights to remake the iconic 'Star Wars: Episode V - The Empire Strikes Back'. 
+This classic film will be re-envisioned with the visionary director Denis Villeneuve, whose expertise in handling large-scale sci-fi epics will make the perfect fit for a remake.
+With Michael B. Jordan as the charismatic and action-driven lead, we believe he will bring a fresh, modern interpretation to the role of a young Jedi. 
+Scarlett Johansson, with her versatility and experience in sci-fi blockbusters, will add depth to the character of Princess Leia, providing both strength and emotional gravity. 
+This combination of talent and creative direction ensures that the remake will honor the original's legacy while appealing to both long-time fans and new audiences alike.</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Task 7</span></span>
+<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Elevator pitch paragraph</span></span>
+<span id="cb104-3"><a href="#cb104-3" aria-hidden="true" tabindex="-1"></a>pitch <span class="ot">&lt;-</span> <span class="st">"</span></span>
+<span id="cb104-4"><a href="#cb104-4" aria-hidden="true" tabindex="-1"></a><span class="st">After a very analysis of market trends and key personnel, I am confident that our proposed remake of 'Star Wars: Episode V - The Empire Strikes Back' will be a major success. </span></span>
+<span id="cb104-5"><a href="#cb104-5" aria-hidden="true" tabindex="-1"></a><span class="st">First, the sci-fi genre continues to thrive in our time, with massive box office successes driven by cutting-edge visual effects and nostalgic storytelling, capturing the hearts of viewers of all ages. Denis Villeneuve, known for his visionary work in 'Blade Runner 2049' and 'Dune,' has a proven track record in crafting visually stunning and deeply engaging sci-fi epics. His directorial style aligns perfectly with the scale and depth required to reimagine the Star Wars universe.</span></span>
+<span id="cb104-6"><a href="#cb104-6" aria-hidden="true" tabindex="-1"></a><span class="st">Secondly, we have secured tentative interest from two A-list actors. Michael B. Jordan, a rising star in action and adventure films, will bring new energy to the role of the young Jedi. Scarlett Johansson, a versatile actress with numerous successful sci-fi credits, will redefine the role of Princess Leia, bringing emotional depth and charisma to the screen.</span></span>
+<span id="cb104-7"><a href="#cb104-7" aria-hidden="true" tabindex="-1"></a><span class="st">Lastly, 'Star Wars: Episode V' remains an iconic film with a massive fanbase. A modern, high-quality remake has the potential to capture both new audiences and long-time fans, making this project not only artistically exciting but commercially promising. Let's greenlight this project and bring this timeless tale back to life!</span></span>
+<span id="cb104-8"><a href="#cb104-8" aria-hidden="true" tabindex="-1"></a><span class="st">From Denis Villeneuve, the visionary mind behind 'Dune' and 'Blade Runner 2049'; and </span></span>
+<span id="cb104-9"><a href="#cb104-9" aria-hidden="true" tabindex="-1"></a><span class="st">From Michael B. Jordan, beloved star of 'Creed' and 'Black Panther'; and </span></span>
+<span id="cb104-10"><a href="#cb104-10" aria-hidden="true" tabindex="-1"></a><span class="st">From Scarlett Johansson, Hollywood icon of sci-fi hits like 'Lucy' and 'The Avengers'; </span></span>
+<span id="cb104-11"><a href="#cb104-11" aria-hidden="true" tabindex="-1"></a><span class="st">Comes the timeless tale of 'Star Wars: Episode V - The Empire Strikes Back.' </span></span>
+<span id="cb104-12"><a href="#cb104-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb104-13"><a href="#cb104-13" aria-hidden="true" tabindex="-1"></a><span class="st">A story of rebellion, hope, and destiny, coming soon to a theater near you.</span></span>
+<span id="cb104-14"><a href="#cb104-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb104-15"><a href="#cb104-15" aria-hidden="true" tabindex="-1"></a><span class="st">With Michael B. Jordan set to bring new energy to the role of a young Jedi and Scarlett Johansson redefining the iconic Princess Leia, this remake promises to captivate both longtime fans and new audiences. Let's greenlight this project and bring this timeless tale back to life!"</span></span>
+<span id="cb104-16"><a href="#cb104-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Print pitch</span></span>
+<span id="cb104-17"><a href="#cb104-17" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(pitch)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+After a very analysis of market trends and key personnel, I am confident that our proposed remake of 'Star Wars: Episode V - The Empire Strikes Back' will be a major success. 
+First, the sci-fi genre continues to thrive in our time, with massive box office successes driven by cutting-edge visual effects and nostalgic storytelling, capturing the hearts of viewers of all ages. Denis Villeneuve, known for his visionary work in 'Blade Runner 2049' and 'Dune,' has a proven track record in crafting visually stunning and deeply engaging sci-fi epics. His directorial style aligns perfectly with the scale and depth required to reimagine the Star Wars universe.
+Secondly, we have secured tentative interest from two A-list actors. Michael B. Jordan, a rising star in action and adventure films, will bring new energy to the role of the young Jedi. Scarlett Johansson, a versatile actress with numerous successful sci-fi credits, will redefine the role of Princess Leia, bringing emotional depth and charisma to the screen.
+Lastly, 'Star Wars: Episode V' remains an iconic film with a massive fanbase. A modern, high-quality remake has the potential to capture both new audiences and long-time fans, making this project not only artistically exciting but commercially promising. Let's greenlight this project and bring this timeless tale back to life!
+From Denis Villeneuve, the visionary mind behind 'Dune' and 'Blade Runner 2049'; and 
+From Michael B. Jordan, beloved star of 'Creed' and 'Black Panther'; and 
+From Scarlett Johansson, Hollywood icon of sci-fi hits like 'Lucy' and 'The Avengers'; 
+Comes the timeless tale of 'Star Wars: Episode V - The Empire Strikes Back.' 
+
+A story of rebellion, hope, and destiny, coming soon to a theater near you.
+
+With Michael B. Jordan set to bring new energy to the role of a young Jedi and Scarlett Johansson redefining the iconic Princess Leia, this remake promises to captivate both longtime fans and new audiences. Let's greenlight this project and bring this timeless tale back to life!</code></pre>
 </div>
 </div>
 

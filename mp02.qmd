@@ -503,31 +503,38 @@ fallen_genres
 ```
 
 ```{r}
-#Task4
 # Load necessary libraries
-library(dplyr)
 library(ggplot2)
+library(dplyr)
+library(tidyr)
 
-# Check the structure of the data frame to find the correct year column
-str(success_by_genre_period)
+# Assuming successful_by_genre_early_recent is already created as per your code
 
-# Let's assume the year column is named `release_year`
-# Define the genres you want to filter for
-selected_genres <- c("Action", "Drama", "Comedy", "Horror", "Sci-Fi")
+# Create a flag to distinguish early and recent decades
+successful_by_genre_early_recent <- total_success_by_genre_decade |>
+    mutate(period = ifelse(decade < 2010, "Early Decades", "Recent Decades"))
 
-# Filter for the selected genres
-genre_success_popularity_selected <- success_by_genre_period |>
-    filter(genres %in% selected_genres)
+# Summarize successes by genre in early and recent periods
+success_by_genre_period <- successful_by_genre_early_recent |>
+    group_by(genres, period) |>
+    summarize(total_successes = sum(num_successes), .groups = 'drop')
 
-# Plot: Success trends for selected genres over time
-ggplot(genre_success_popularity_selected, aes(x = factor(decade), y = num_successes, color = genres, group = genres)) +
-    geom_line(size = 1.5) +
-    geom_point(size = 3) +
-    labs(title = "Success Trends for Selected Genres Over Time",
-         x = "Decade", y = "Number of Successes",
-         color = "Genre") +
-    theme_minimal()
+# Spread to make it easier to compare early vs. recent
+success_by_genre_period <- success_by_genre_period |>
+    pivot_wider(names_from = period, values_from = total_successes, values_fill = 0)
 
+# Create a line plot to visualize successes over periods
+ggplot(success_by_genre_period, aes(x = genres)) +
+    geom_line(aes(y = `Early Decades`, color = "Early Decades"), size = 1) +
+    geom_line(aes(y = `Recent Decades`, color = "Recent Decades"), size = 1) +
+    geom_point(aes(y = `Early Decades`, color = "Early Decades"), size = 3) +
+    geom_point(aes(y = `Recent Decades`, color = "Recent Decades"), size = 3) +
+    labs(title = "Total Successes by Genre: Early vs. Recent Decades",
+         x = "Genres",
+         y = "Total Successes",
+         color = "Period") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ```{r}
@@ -609,17 +616,15 @@ popular_genres_recent_years
 #Task 5: Movie Pitch
 # Define the pitch text
 pitch <- "
-<b>Title:</b> <i>Shadows in the Horizon</i><br>
-<br>
-<b>Plot Overview:</b> In a dystopian future where artificial intelligence has gained near-total control over human society, a group of unlikely heroes comes together to dismantle the system that has suppressed freedom for decades. Their journey takes them through moral dilemmas, high-stakes battles, and the ultimate realization that the enemy may not be as simple as it seems.<br>
-<br>
-<b>Why This Team?</b><br>
-<b>Michael B. Jordan:</b> Known for his incredible performances in films like <i>Creed</i> and <i>Black Panther</i>, Michael B. Jordan brings intensity and emotional depth to the lead role. His ability to embody both strength and vulnerability makes him the perfect choice to lead a rebellion against an all-powerful system.<br>
-<b>Scarlett Johansson:</b> With her iconic performances in <i>Lucy</i> and the <i>Avengers</i> series, Scarlett Johansson brings both charisma and complexity to the role of a former AI scientist who questions her past decisions. Her experience in action-packed, sci-fi roles makes her an invaluable part of the cast.<br>
-<b>Denis Villeneuve:</b> As the visionary director behind <i>Blade Runner 2049</i> and <i>Dune</i>, Denis Villeneuve is the ideal choice to bring this dark, futuristic world to life. His exceptional ability to combine stunning visuals with intricate storytelling will elevate <i>Shadows in the Horizon</i> beyond a typical sci-fi film.<br>
-<br>
-<b>Supporting Data:</b><br>
-We have identified key personnel whose past projects in the action/sci-fi genres have been immensely successful, as shown by both IMDb ratings and our custom success metric. Below is a graphical representation of their success:<br>"
+Title: Shadows in the Horizon
+
+Plot Overview: In a dystopian future where artificial intelligence has gained near-total control over human society, a group of unlikely heroes comes together to dismantle the system that has suppressed freedom for decades. Their journey takes them through moral dilemmas, high-stakes battles, and the ultimate realization that the enemy may not be as simple as it seems.
+
+Why This Team? Michael B. Jordan is known for his incredible performances in films like Creed and Black Panther. He brings intensity and emotional depth to the lead role, embodying both strength and vulnerability, making him the perfect choice to lead a rebellion against an all-powerful system. Scarlett Johansson, with her iconic performances in Lucy and the Avengers series, adds charisma and complexity to the role of a former AI scientist who questions her past decisions. Her experience in action-packed, sci-fi roles makes her an invaluable part of the cast. Denis Villeneuve, the visionary director behind Blade Runner 2049 and Dune, is ideal for bringing this dark, futuristic world to life. His exceptional ability to combine stunning visuals with intricate storytelling will elevate Shadows in the Horizon beyond a typical sci-fi film.
+
+Supporting Data: We have identified key personnel whose past projects in the action/sci-fi genres have been immensely successful, as shown by both IMDb ratings and our custom success metric. Below is a graphical representation of their success:
+"
+
 ```
 ```{r}
 # Load necessary libraries
