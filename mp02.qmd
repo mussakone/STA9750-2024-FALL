@@ -621,6 +621,8 @@ Title: Shadows in the Horizon
 Plot Overview: In a dystopian future where artificial intelligence has gained near-total control over human society, a group of unlikely heroes comes together to dismantle the system that has suppressed freedom for decades. Their journey takes them through moral dilemmas, high-stakes battles, and the ultimate realization that the enemy may not be as simple as it seems.
 
 Why This Team? Michael B. Jordan is known for his incredible performances in films like Creed and Black Panther. He brings intensity and emotional depth to the lead role, embodying both strength and vulnerability, making him the perfect choice to lead a rebellion against an all-powerful system. Scarlett Johansson, with her iconic performances in Lucy and the Avengers series, adds charisma and complexity to the role of a former AI scientist who questions her past decisions. Her experience in action-packed, sci-fi roles makes her an invaluable part of the cast. Denis Villeneuve, the visionary director behind Blade Runner 2049 and Dune, is ideal for bringing this dark, futuristic world to life. His exceptional ability to combine stunning visuals with intricate storytelling will elevate Shadows in the Horizon beyond a typical sci-fi film.
+# Print paragraph
+
 
 Supporting Data: We have identified key personnel whose past projects in the action/sci-fi genres have been immensely successful, as shown by both IMDb ratings and our custom success metric. Below is a graphical representation of their success:
 "
