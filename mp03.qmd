@@ -548,7 +548,7 @@ ggplot(map_data) +
   facet_wrap(~year)  # Create a facet for each election year
 ```
 
-## Comparing the Effects of ECV Allocation Rules
+## Task7 Comparing the Effects of ECV Allocation Rules
 
 After analyzing historical voting data,I believe that the State-Wide Winner Take All method that we all currently use in the country actually gives a slight edge to Republican candidates.It generally favors candidates who can win swing states and is the least aligned with the popular vote, and Republicans have been winning.The National Proportional system is likely the fairest in terms of reflecting the popular vote directly. ##Task 7 Evaluating Fairness of ECV Allocation Schemes Based on our analysis, it is shown that the National Proportional System is the fairest allocation method for the Electoral College, aligning most closely with Senator Elizabeth Warren’s claim that the current system disadvantages voters in heavily populated states. Under the existing State-Wide Winner-Take-All system, the Electoral College disproportionately boosts the voices of voters in smaller states. This is because smaller states receive a minimum of three electoral votes regardless of population, giving each individual vote more weight compared to votes in heavily populated states. As a result, candidates can lose the national popular vote but still win the presidency, as seen in the 2000 and 2016 elections, where the winners (George W. Bush and Donald Trump) did not win the popular vote but won the electoral vote.
 
@@ -556,6 +556,3 @@ On the contrary, the National Proportional System allocates Electoral College Vo
 
 Based on the analysis, we rate Senator Warren’s claim as "Mostly True" on the PolitiFact Truth-O-Meter. The current system indeed disadvantages voters in larger, heavily populated states by concentrating influence in smaller or swing states. A National Proportional System would mitigate this issue by providing a more democratic and representative outcome, which closely goes along with Senator Warren’s perspective.
 
-```{r}
-quarto::quarto_render(input="mp03.qmd", as_job=FALSE, debug=TRUE, quiet=FALSE)
-```
