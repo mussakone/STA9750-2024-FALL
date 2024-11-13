@@ -427,12 +427,34 @@ list.files(td)  # Check the contents of the unzipped folder
 #| code-fold: true
 #| code-summary: "Click to Show/Hide Code"
 
+# Load required libraries
+library(dplyr)
+library(ggplot2)
+library(sf)
+
+# Define a temporary directory to store the extracted shapefiles
+td <- tempdir()
+
+# Define the path to the shapefile zip
+zip_file <- "us_states_shp.zip"  # Make sure this zip file exists in the working directory
+
+# Unzip the shapefile contents to the temporary directory
+unzip(zip_file, exdir = td)
+
+#| echo: true
+#| code-fold: true
+#| code-summary: "Click to Show/Hide Code"
+
 # Define the path to the extracted .shp file
 shp_file <- file.path(td, "cb_2022_us_state_20m.shp")  # Adjust file name if needed
 
 # Load the shapefile
 library(sf)
 us_states_sf <- st_read(shp_file)
+```
+
+```{r}
+
 ```
 
 ```{r}
