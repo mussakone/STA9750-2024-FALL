@@ -253,9 +253,11 @@ outcome_changes <- total_votes_by_candidate %>%
   ungroup() %>%
   select(year, state, district, candidate, party, total_votes, major_party_votes, winner_total, winner_major_only, outcome_change)
 
-# Display the result as a table with all necessary details
-kable(outcome_changes, caption = "Comparison of Presidential and Congressional Votes by State, Year, and Party (including outcome changes)")
+# Sub-sample the result for a more manageable display size 
+outcome_changes_sample <- outcome_changes %>% sample_n(50)
 
+# Display the result as a table with all necessary details
+kable(outcome_changes_sample, caption = "Comparison of Presidential and Congressional Votes by State, Year, and Party (including outcome changes)")
 ```
 
 ##3 Do presidential candidates tend to run ahead of or run behind congressional candidates in the same state? That is, does a Democratic candidate for president tend to get more votes in a given state than all Democratic congressional candidates in the same state?
@@ -263,6 +265,10 @@ kable(outcome_changes, caption = "Comparison of Presidential and Congressional V
 Does this trend differ over time? Does it differ across states or across parties? Are any presidents particularly more or less popular than their co-partisans?
 
 ```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Click to Show/Hide Code"
+
 # Load necessary libraries
 library(dplyr)
 library(readr)
@@ -296,11 +302,19 @@ table_data <- combined_data %>%
   select(year, state, party_detailed, total_presidential_votes, total_congress_votes, vote_difference) %>%
   arrange(year, state)
 
+# Sub-sample the result for a more manageable display size 
+table_data_sample <- table_data %>% sample_n(50)
+
 # Display the result as a formatted table
-kable(table_data, caption = "Comparison of Presidential and Congressional Votes by State, Year, and Party (Detailed)")
+kable(table_data_sample, caption = "Comparison of Presidential and Congressional Votes by State, Year, and Party (Detailed)")
+
 ```
 
 ```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Click to Show/Hide Code"
+
 library(ggplot2)
 library(sf)
 
@@ -322,6 +336,10 @@ nyc_sf
 ## Task 4: Automate Zip File Extraction In this task, we are creating a reusable function, read_shp_from_zip(), to efficiently handle shapefile data stored within zip archives above . Rather than manually unzipping files and locating shapefiles, this function automates the process by locating, extracting and seamlessly loading.
 
 ```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Click to Show/Hide Code"
+
 library(ggplot2)
 library(sf)
 
@@ -415,14 +433,6 @@ shp_file <- file.path(td, "cb_2022_us_state_20m.shp")  # Adjust file name if nee
 # Load the shapefile
 library(sf)
 us_states_sf <- st_read(shp_file)
-```
-
-```{r}
-#| echo: true
-#| code-fold: true
-#| code-summary: "Click to Show/Hide Code"
-
-st_drivers()
 ```
 
 ```{r}
@@ -555,4 +565,3 @@ After analyzing historical voting data,I believe that the State-Wide Winner Take
 On the contrary, the National Proportional System allocates Electoral College Votes (ECVs) based directly on each candidate’s share of the national popular vote. This makes sure that ECV distribution reflects the actual voter preference nationwide. This system would prevent outcomes where the Electoral College diverges from the popular vote, promoting a fairer representation of voter intentions. For example, in the 2020 election, a proportional allocation would have still resulted in Joe Biden's victory, based off his popular vote lead, while eliminating excess influence from swing states.
 
 Based on the analysis, we rate Senator Warren’s claim as "Mostly True" on the PolitiFact Truth-O-Meter. The current system indeed disadvantages voters in larger, heavily populated states by concentrating influence in smaller or swing states. A National Proportional System would mitigate this issue by providing a more democratic and representative outcome, which closely goes along with Senator Warren’s perspective.
-
