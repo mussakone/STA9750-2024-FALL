@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+/.quarto/
+1976-2022-house.csv
+2022_expenses.csv
+fred_key.txt
+alphavantage_key.txt
