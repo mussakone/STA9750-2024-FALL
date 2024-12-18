@@ -1,0 +1,380 @@
+---
+title: "My Individual Report"
+author: "Mussa Kone"
+editor: visual
+---
+
+## Introduction
+
+The fast growth and adoption of electric vehicles (EVs) is changing the transportation landscape, driven by the need to reduce greenhouse gas emissions and transition to sustainable energy. However, the rate of EV adoption varies significantly across states, influenced by multiple factors, including the availability and quality of EV charging infrastructure. This individual report's goal is to explore the big question: **How do the number and speed of EV charging stations in each region affect EV adoption?**
+
+To address this individual report question, we will look at various aspects of EV charging infrastructure through several subtopic analyses. These include identifying the states with the highest number of public EV charging stations per capita or per square mile, understanding the ratio of EVs to available charging ports, and analyzing the relationship between population density and charging station availability. In addition, we will dive into how charging speed, particularly the prevalence of Level 3 DC Fast Charging stations, has an impact on EV adoption by reducing charging times and enhancing convenience for EV users. Lastly, the geographic distribution of charging stations across urban and rural areas will be studied to uncover disparities in infrastructure availability, including correlations with geographic factors like elevation.
+
+This analysis will be conducted using coding and data analysis techniques in RStudio which we have learned throughout this course by way of mini projects and assignments. This is in hopes of leveraging publicly available datasets on EV charging stations, vehicle registrations, and demographic information. By bringing together statistical methods and data visualization, we will bring to light patterns and relationships that offer insights into how charging infrastructure impacts EV adoption.
+
+## Charging Infrastructure
+
+To address the subtopic questions related to EV charging infrastructure, we will leverage several datasets and conduct thorough data analysis using RStudio. Our primary sources include the U.S. Department of Energy's Alternative Fuels Data Center (AFDC)for detailed information on public EV charging stations, the National Highway Traffic Safety Administration (NHTSA) for state-level vehicle registration data, and the U.S. Census Bureau. for demographic and geographic insights, including population density and urban-rural classifications. Additionally, we will use elevation data from the U.S. Geological Survey (USGS) to explore geographic factors influencing the distribution of charging stations.
+
+Using these datasets, we will compute key metrics such as the number of public EV charging stations per capita and per square mile for each state, as well as the average ratio of EVs to charging ports. We will also examine the relationship between population density and charging infrastructure, defining low and high-density regions based on Census Bureau classifications. These methods will include data cleaning, statistical computations, and visualization through graphs and maps to uncover patterns and correlations. This comprehensive approach will provide actionable insights into the role of charging infrastructure in supporting EV adoption and its geographic and demographic nuances.
+
+To start off, let’s examine data to determine which state has the highest number of public EV charging stations per capita or per square mile. By analyzing these metrics, we can identify which states are leading in infrastructure availability relative to their population and geographic size. The dataset for this analysis is sourced from the U.S. Department of Energy's Alternative Fuels Data Center (AFDC), which provides solid information on public EV charging stations, As well as the US Census Bureau for 2023 population and land data.
+
+```{r,message=FALSE, warning=FALSE}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Click to Show/Hide Code"
+
+library(tidyverse)
+library(ggplot2)
+library(maps)
+
+# Note: Data below was originally extracted from two CSV files:
+# 1. /Users/mussakone/STA9750-2024-FALL/Station-counts-bystate.csv for EV station counts.
+# 2. /Users/mussakone/STA9750-2024-FALL/US_States_Population_and_Land_Area.csv for population and land area.
+# The data is presented here via textConnection for simplification in this script.
+data_frame <- read.csv(textConnection("
+State,Stations,Population,Land_Area
+Alabama,424,5024279,52420
+Alaska,65,733391,571951
+Arizona,1198,7151502,113990
+Arkansas,334,3011524,53179
+California,16381,39538223,155779
+Colorado,2165,5773714,103642
+Connecticut,865,3605944,4845
+Delaware,197,989948,1949
+Florida,3430,23002597,53625
+Georgia,1886,10711908,57906
+Hawaii,384,1455271,6423
+Idaho,205,1839106,82743
+Illinois,1337,12812508,55519
+Indiana,565,6785528,35826
+Iowa,371,3190369,55857
+Kansas,547,2937880,81823
+Kentucky,328,4505836,39486
+Louisiana,265,4657757,43204
+Maine,486,1362359,30843
+Maryland,1726,6177224,9707
+Massachusetts,2965,7029917,7800
+Michigan,1447,10077331,56539
+Minnesota,773,5706494,79627
+Mississippi,163,2961279,46923
+Missouri,1240,6160281,68895
+Montana,126,1084225,145546
+Nebraska,339,1961504,76824
+Nevada,630,3104614,109781
+New Hampshire,330,1377529,8953
+New Jersey,2107,9288994,7355
+New Mexico,236,2117522,22591
+New York,3898,20201249,7354
+North Carolina,1522,10439388,47214
+North Dakota,51,779094,53819
+Ohio,1561,11799448,40948
+Oklahoma,418,3959353,44826
+Oregon,1316,4237256,95988
+Pennsylvania,2045,13002700,44817
+Rhode Island,441,1097379,2676
+South Carolina,559,5118425,32020
+South Dakota,56,886667,75811
+Tennessee,785,6910840,41235
+Texas,5132,29145505,261232
+Utah,433,3271616,82170
+Vermont,381,643077,9616
+Virginia,1619,8631393,39490
+Washington,1885,7705281,66456
+West Virginia,86,1793716,24038
+Wisconsin,646,5893718,54310
+Wyoming,56,576851,97093
+"))
+
+# Calculate per capita and per square mile values
+data_frame <- data_frame %>%
+  mutate(
+    Stations_Per_Capita = (Stations / Population) * 100000,
+    Stations_Per_Square_Mile = Stations / Land_Area
+  )
+
+# Create a summary table
+summary_table <- data_frame %>%
+  select(State, Stations_Per_Capita, Stations_Per_Square_Mile) %>%
+  arrange(desc(Stations_Per_Capita))
+
+# Print the summary table
+print(summary_table)
+
+# Map visualization
+us_states <- map_data("state")
+data_frame$region <- tolower(data_frame$State)
+
+map_data <- merge(us_states, data_frame, by = "region")
+
+ggplot(map_data, aes(long, lat, group = group, fill = Stations_Per_Capita)) +
+  geom_polygon(color = "white") +
+  coord_fixed(1.3) +
+  scale_fill_viridis_c(option = "C") +
+  labs(title = "EV Charging Stations Per Capita by State", fill = "Stations per 100k") +
+  theme_minimal()
+
+```
+
+This analysis of the data researched shows insights into the distribution and accessibility of electric vehicle (EV) charging stations across the United States, focusing on stations per capita and per square mile across various states. Using two primary datasets that were created based of data from the AFDC and US Census Bureau.I compiled and saved the data as CSV files "Station-counts-bystate.csv" for EV charging station details and "US_States_Population_and_Land_Area.csv" for population and land area statistics. I was able to identify top-performing states. Vermont leads with the highest number of charging stations per capita at 59.25 stations per 100,000 people, indicating a robust infrastructure relative to its population size, while New York has the densest network at 0.53 stations per square mile, reflecting its urban density which was expected. Meanwhile, states like California and Massachusetts also show high per capita counts, highlighting their infrastructure efforts. In contrast, larger states like Alaska and Montana exhibit lower metrics due to their vast land areas and lower population densities. These findings highlight where EV infrastructure is most accessible and underscore the geographical and demographic considerations essential for supporting broader EV adoption, potentially leading the charge for future infrastructure development to enhance EV accessibility.
+
+We are now ready to answer and dive into our next subtopic question of "What is the average ratio of EVs to available charging ports in each state?" In order for us to tackle this analysis, we will utilize data from two primary sources. The first is our initial CSV file that comprehensively lists the number of charger ports per state, which provides an up-to-date snapshot of the available charging infrastructure. The second source will be a brand new dataset that will deal with the number of electric vehicle (EV) registrations in each state, which we will use to gauge the demand side of the equation. Both sets of data will be complemented by information from the Alternative Fuels Data Center (AFDC), part of the U.S. Department of Energy, which offers detailed insights into the types and distribution of EV charging stations across the country. By integrating these datasets, we aim to accurately calculate and analyze the ratio of EVs to charging ports, providing a clear picture of the current state of EV infrastructure and its alignment with EV adoption in various regions.
+
+```{r,message=FALSE, warning=FALSE}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Click to Show/Hide Code"
+
+
+# Load necessary libraries
+library(dplyr)
+library(knitr)
+library(kableExtra)
+
+# Set the working directory (adjust this to your folder)
+setwd("/Users/mussakone/STA9750-2024-FALL")  
+
+# Read the CSV files
+ev_reg_data <- read.csv("ev_registration_counts_by_state.csv")
+station_counts_data <- read.csv("Station-counts-bystate.csv", skip = 3)
+
+# Clean and prepare EV Registration data
+ev_reg_data <- ev_reg_data %>%
+  slice(3:n()) %>%  # Remove irrelevant rows
+  select(State = 2, Registration_Count = 3) %>%  # Select relevant columns
+  mutate(Registration_Count = as.numeric(gsub("[^0-9]", "", Registration_Count))) %>%  # Clean and convert to numeric
+  filter(!is.na(Registration_Count))
+
+# Clean and prepare Station Counts data
+station_counts_data <- station_counts_data %>%
+  slice(4:n()) %>%  # Remove irrelevant rows
+  select(State = 1, Electrica = 5) %>%  # Select relevant columns
+  mutate(
+    Charging_Outlets = as.numeric(gsub(",", "", sub(".*\\|\\s*", "", Electrica)))
+  ) %>%  # Extract and clean charging outlets
+  filter(!is.na(Charging_Outlets))
+
+# Merge the datasets
+merged_data <- ev_reg_data %>%
+  inner_join(station_counts_data, by = "State") %>%
+  mutate(EV_to_Port_Ratio = Registration_Count / Charging_Outlets) %>%  # Calculate the ratio
+  arrange(desc(EV_to_Port_Ratio))  # Sort by ratio
+
+# Create and display the table
+kable(merged_data, caption = "Ratios of EV Registrations to Charging Ports by State") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+As you can see, what was explored here was the relationship between the number of registered electric vehicles (EVs) and the availability of charging outlets across U.S. states, by way of utilizing data from ev_registration_counts_by_state.csv and Station-counts-bystate.csv. The datasets were cleaned to extract relevant columns: EV registration counts and charging outlet numbers by state. Non-numeric characters were removed, and the data was converted to numeric formats for accurate calculations. After merging the datasets by state, the ratio of EVs to charging ports was calculated and ranked in descending order to identify states with the highest and lowest ratios. The results revealed that New Jersey and Hawaii had the highest ratios of EVs to charging ports, reflecting significant demand for charging infrastructure relative to availability. In these states, high population density and rapid EV adoption outpace infrastructure expansion. Similarly, New York and California, both large states with substantial urban areas, showed relatively high ratios. For New York, the dense urban environment and concentrated EV ownership create high pressure on charging resources despite infrastructure investments. In California, the high EV adoption rate—the largest in the U.S.—contributes to its elevated ratio, even with substantial infrastructure. Conversely, states like Wyoming and Alaska exhibited much lower ratios, reflecting sparse populations, fewer EVs, and infrastructure that adequately meets current demand. This analysis highlights the urgent need for targeted infrastructure expansion in states with high ratios to support continued EV adoption.
+
+Next up, I aim to explore the relationship between population density and the availability of EV charging ports across different states. Specifically, we will calculate the average ratio of population density (measured as people per square mile) to the number of charging ports available in each state. This analysis will categorize states into high-density (urban) and low-density (rural) groups, using a threshold of 500 people per square mile to define these categories. By comparing the ratios across these groups, we hope to uncover insights into how population density impacts the adequacy of charging infrastructure. This study will provide valuable information about whether densely populated states face greater challenges in meeting charging demands or if lower-density states have sufficient infrastructure despite their dispersed populations.
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Click to Show/Hide Code"
+
+# Load necessary libraries
+library(dplyr)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(maps)
+
+# Read the datasets
+population_data <- read.csv("US_States_Population_and_Land_Area.csv")
+station_counts_data <- read.csv("Station-counts-bystate.csv", skip = 3)
+
+# Clean and prepare population data
+population_data <- population_data %>%
+  rename(State = State, Population = Population, Land_Area = Land_Area) %>%
+  mutate(Population_Density = Population / Land_Area)  # Calculate population density
+
+# Clean and prepare station counts data
+station_counts_data <- station_counts_data %>%
+  slice(4:n()) %>%  # Skip the header rows
+  select(State = 1, Electrica = 5) %>%  # Select relevant columns
+  mutate(
+    # Extract the second number from the Electrica column for Charging Outlets
+    Charging_Outlets = as.numeric(gsub(",", "", sub("^[^|]*\\|\\s*([0-9,]+).*", "\\1", Electrica)))
+  ) %>%
+  filter(!is.na(Charging_Outlets)) %>%  # Remove rows with missing outlet data
+  select(State, Charging_Outlets)
+
+# Verify the extracted Charging Outlets
+print(station_counts_data)
+
+# Merge datasets by State
+merged_data <- population_data %>%
+  inner_join(station_counts_data, by = "State") %>%
+  mutate(
+    Density_to_Port_Ratio = Population_Density / Charging_Outlets,  # Calculate the ratio
+    Density_Category = ifelse(Population_Density >= 500, "High-Density", "Low-Density")  # Classify states
+  )
+
+# Create a summary table with results for each state
+state_summary_table <- merged_data %>%
+  select(State, Population_Density, Charging_Outlets, Density_to_Port_Ratio, Density_Category) %>%
+  arrange(desc(Density_to_Port_Ratio))
+
+# Display the table
+kable(state_summary_table, caption = "Population Density to Charging Port Ratios by State and Category") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+# Prepare data for mapping
+us_states <- map_data("state")
+map_data <- us_states %>%
+  left_join(merged_data %>% mutate(region = tolower(State)), by = "region")
+
+# Create a map to visualize the Density to Port Ratios
+ggplot(map_data, aes(long, lat, group = group, fill = Density_to_Port_Ratio)) +
+  geom_polygon(color = "white") +
+  coord_fixed(1.3) +
+  scale_fill_viridis_c(option = "C", name = "Density to Port Ratio") +
+  labs(title = "Population Density to Charging Port Ratios by State") +
+  theme_minimal()
+
+#  Create a map showing density categories
+ggplot(map_data, aes(long, lat, group = group, fill = Density_Category)) +
+  geom_polygon(color = "white") +
+  coord_fixed(1.3) +
+  scale_fill_manual(values = c("Low-Density" = "skyblue", "High-Density" = "coral"), name = "Density Category") +
+  labs(title = "Population Density Categories by State") +
+  theme_minimal()
+```
+
+The "Population Density to Charging Port Ratios by State and Category" table and maps reveal key insights into how population density impacts EV charging infrastructure adequacy. Population density was calculated as the total population divided by land area (in square miles), while charging outlets were extracted from the second value in the Electrica column. The density-to-port ratio, calculated as population density divided by charging outlets, indicates the level of population pressure on charging resources. States with higher ratios, such as Delaware (0.97) and New Jersey (0.34), reflect greater strain on EV infrastructure, highlighting the need for additional investments. Conversely, low-density states like Wyoming (0.02) and Montana (0.02) exhibit low ratios, suggesting sufficient infrastructure for their dispersed populations. States were classified as high-density (≥500 people per square mile) or low-density (\<500 people per square mile), with maps visualizing these categories and their respective ratios. High-density states, often urbanized, face greater challenges in meeting demand, while low-density states typically experience less strain but could benefit from infrastructure expansion. This analysis shows the importance of targeting high-density states for immediate investment while preparing rural states for future EV adoption, ensuring equitable access to charging resources nationwide.
+
+## Charging Speed
+
+Next up, we'll explore the impact of charging speed on EV infrastructure by identifying which state provides the fastest average charging speed based on the availability of Level 3 (DC Fast Charging) stations. Level 3 charging is significantly faster than Level 1 or Level 2 charging. While Level 1 chargers can take over 24 hours to fully charge an EV and Level 2 chargers typically require 4–8 hours, DC Fast Chargers can bring back up to 80% of a vehicle’s battery in 20–30 minutes. This efficiency makes Level 3 chargers a serious component of EV infrastructure, especially for long-distance travel and high-density urban areas where quick turnaround times are essential. By analyzing the availability of DC Fast Charging stations across states, we aim to determine which regions offer the fastest charging experience for EV users, and how the distribution of such stations supports EV adoption and accessibility.
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Click to Show/Hide Code"
+
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+
+#  Level 3 charger data manually extracted from the "Station-counts-bystate.csv" file
+level_3_data <- data.frame(
+  State = c(
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
+    "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", 
+    "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", 
+    "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", 
+    "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", 
+    "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", 
+    "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", 
+    "Wisconsin", "Wyoming"
+  ),
+  Level_3_Chargers = c(
+    357, 34, 1019, 121, 10548, 928, 417, 197, 51, 2164, 1089, 68, 136, 970, 
+    508, 307, 222, 208, 219, 153, 929, 666, 
+    703, 438, 115, 440, 164, 153, 624, 
+    177, 1003, 244, 1359, 979, 88, 
+    748, 843, 790, 997, 91, 453, 103, 
+    479, 2257, 332, 119, 1104, 1074, 141, 
+    414, 108
+  )
+)
+
+# Display the data as a table with a note about the source
+kable(level_3_data, caption = "Corrected Number of Level 3 (DC Fast Charging) Stations by State (Data Source: Station-counts-bystate.csv)") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+# Create a bar chart for Level 3 chargers by state
+ggplot(level_3_data, aes(x = reorder(State, -Level_3_Chargers), y = Level_3_Chargers, fill = Level_3_Chargers)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +  # Flip the axes for better readability
+  scale_fill_viridis_c(option = "C", name = "Level 3 Chargers") +
+  labs(
+    title = " Level 3 (DC Fast Charging) Stations by State",
+    subtitle = "Data Source: Station-counts-bystate.csv",
+    x = "State",
+    y = "Number of Level 3 Chargers"
+  ) +
+  theme_minimal()
+```
+
+After looking over the data on the table and bar chart, it appears that California provides the fastest average charging speed due to its overwhelming availability of Level 3 (DC Fast Charging) stations, with a total of **10,548 chargers**—far surpassing all other states. This extensive infrastructure reflects California's proactive investments in EV adoption and its status as the nation's leader in EV market share. Following California, states such as Florida (**2,164 chargers**) and Texas (**2,257 chargers**) also showcase significant availability of Level 3 chargers, catering to their large populations and rapidly growing EV markets. New York (**1,359 chargers**) and Georgia (**1,089 chargers**) rank closely behind, further emphasizing their commitment to providing fast and efficient charging for EV users. These states are key hubs for EV adoption due to their urban density and frequent long-distance travel corridors. Conversely, smaller or more rural states, such as Wyoming (**108 chargers**) and Alaska (**34 chargers**), have fewer Level 3 chargers, reflecting their lower population densities and slower EV adoption rates. Overall, the high concentration of Level 3 chargers in leading states like California, Florida, and Texas positions them as pivotal regions for supporting fast EV charging, enabling greater convenience and shorter wait times for EV users.
+
+## Geographic Coverage
+
+Next we will discuss geographic coverage and if this has an effect on the number and speed of EV charging stations in each region and its affect on EV adoption.We will look at factors such as the elevation of states in comparison to their EV charging station count.
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Click to Show/Hide Code"
+
+# Load necessary libraries
+library(dplyr)
+library(knitr)
+library(kableExtra)
+
+
+# The mean elevation data was obtained from the United States Geological Survey (USGS) - National Map.
+# Source: https://www.usgs.gov/the-national-map
+
+# Load Station-counts-bystate.csv (source: Project CSV)
+station_data <- read.csv("Station-counts-bystate.csv", skip = 3)
+
+# Extract total charging stations (first number in the Electrica column)
+station_data <- station_data %>%
+  select(State = 1, Electrica = 5) %>%  # Select relevant columns
+  mutate(
+    Total_Stations = as.numeric(gsub(",", "", sapply(strsplit(Electrica, "\\|"), function(x) trimws(x[1]))))
+  ) %>%
+  select(State, Total_Stations)  # Keep only necessary columns
+
+# Elevation and Urban/Rural Data (from USGS National Map)
+geo_data <- data.frame(
+  State = c(
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
+    "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", 
+    "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", 
+    "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", 
+    "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", 
+    "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", 
+    "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", 
+    "Wisconsin", "Wyoming"
+  ),
+  Mean_Elevation = c(
+    500, 1900, 4100, 650, 2900, 6800, 500, 60, 100, 600, 3030, 5000, 600, 700, 1100, 2000, 
+    750, 100, 600, 350, 500, 900, 1200, 300, 800, 3400, 2600, 5500, 1000, 250, 5700, 1000, 
+    700, 1900, 850, 1300, 3300, 1100, 200, 350, 2200, 900, 1700, 6100, 1000, 950, 1700, 1500, 
+    1050, 6700
+  ),
+  Urban_Rural = c(
+    "Mix", "Rural", "Mix", "Rural", "Urban/Rural", "Rural", "Urban", "Urban", "Urban/Rural", 
+    "Mix", "Mix", "Rural", "Mix", "Mix", "Rural", "Rural", "Mix", "Mix", "Rural", "Mix", 
+    "Urban", "Mix", "Mix", "Rural", "Mix", "Rural", "Rural", "Mix", "Rural", "Urban", "Rural", 
+    "Mix", "Mix", "Rural", "Mix", "Rural", "Mix", "Urban", "Mix", "Mix", "Mix", "Mix", 
+    "Mix", "Mix", "Mix", "Mix", "Mix", "Mix", "Rural","Rural"
+  )
+)
+
+# Ensure all vectors have 50 rows
+stopifnot(length(geo_data$State) == length(geo_data$Mean_Elevation))
+stopifnot(length(geo_data$State) == length(geo_data$Urban_Rural))
+
+# Merge the station data with geographic data
+merged_data <- geo_data %>%
+  left_join(station_data, by = "State")
+
+# Create a summary table
+kable(merged_data, caption = "Charging Station Counts and Geographic Characteristics by State (Elevation Data from USGS)") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+This geographic coverage data and table provide insights into how EV charging stations are distributed across states with different mean elevations and urban or rural characteristics. States such as California, with a mix of urban and rural areas and a mean elevation of 2,900 feet, lead in EV infrastructure with the highest total number of charging stations. This shows the state's commitment to supporting EV adoption across fairly different terrains and population densities. On the opposite side of the spectrum, predominantly rural and high-elevation states such as Wyoming (6,700 feet) and Alaska (1,900 feet) have a showing of significantly fewer charging stations, highlighting the challenges of extending EV infrastructure in areas with lower population densities and logistical hurdles.
+
+## Conclusion
+
+In conclusion, the number and speed of EV charging stations are critical to adoption, with states like California leading due to its extensive and fast-charging infrastructure. Urbanized regions face higher demand challenges, while rural states with fewer chargers reflect logistical barriers. Targeted investments can bridge these gaps and accelerate EV adoption nationwide.
